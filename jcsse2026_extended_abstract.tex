@@ -1,8 +1,13 @@
-% JCSEE Bangkok 2026 - Extended Abstract Template
-% IEEE-style two-column format for conference proceedings
-% Maximum 2 pages including figures, tables, references, and author information
+% JCSSE Bangkok 2026 - Extended Abstract Template (Poster Session)
+% The 23rd International Joint Conference on Computer Science and Software Engineering
+% 24-27 June 2026, Bangkok, Thailand
+% https://jcsse2026.org/
+%
+% IEEE Conference Proceedings format - A4 paper, Times New Roman 10pt
+% Extended Abstract: 1-2 pages | Full Paper: up to 6 pages
+% BLIND REVIEW: Do NOT include author names/affiliations until camera-ready
 
-\documentclass[10pt,twocolumn,letterpaper]{article}
+\documentclass[10pt,twocolumn,a4paper]{article}
 
 % ===== PACKAGES =====
 \usepackage[utf8]{inputenc}
@@ -20,18 +25,19 @@
 \usepackage{balance}                    % Balance last page columns
 \usepackage{titlesec}                   % Section formatting
 \usepackage{fancyhdr}                   % Header/footer control
-\usepackage{lipsum}                     % Dummy text (remove in final)
+\usepackage{flushend}                   % Balance final page columns
 
-% ===== PAGE LAYOUT =====
-% Print area: 6-7/8 inches (17.5 cm) wide by 8-7/8 inches (22.54 cm) high
-% Columns: 3-1/4 inches (8.25 cm) wide with 5/16 inch (0.8 cm) gap
+% ===== PAGE LAYOUT (A4 Paper - IEEE Standard) =====
+% A4: 210mm x 297mm
+% Top margin: 19mm, Bottom: 43mm, Left/Right: 13mm
+% Column width: 88mm, Column gap: 6mm
 \usepackage[
-    letterpaper,
-    top=1in,
-    bottom=1.125in,
-    left=0.75in,
-    right=0.75in,
-    columnsep=0.3125in
+    a4paper,
+    top=19mm,
+    bottom=43mm,
+    left=13mm,
+    right=13mm,
+    columnsep=6mm
 ]{geometry}
 
 % ===== NO PAGE NUMBERS =====
@@ -144,36 +150,43 @@
 % ===== TITLE =====
 \twocolumn[
 \begin{center}
-    {\fontsize{24pt}{28pt}\selectfont Extended Abstract: Your Paper Title Here\par}
+    {\fontsize{24pt}{28pt}\selectfont Your Paper Title Here: Use Title Case Capitalization\par}
     \vspace{18pt}
     
-    % ===== AUTHORS (adjust columns as needed) =====
-    % One author: center; Two: left/right; Three: three columns
-    \begin{tabular}{ccc}
-        \begin{tabular}{c}
-            \textbf{First Author Name} \\
-            \textit{Affiliation} \\
-            author1@email.com
-        \end{tabular}
-        &
-        \begin{tabular}{c}
-            \textbf{Second Author Name} \\
-            \textit{Affiliation} \\
-            author2@email.com
-        \end{tabular}
-        &
-        \begin{tabular}{c}
-            \textbf{Third Author Name} \\
-            \textit{Affiliation} \\
-            author3@email.com
-        \end{tabular}
-    \end{tabular}
-    \vspace{18pt}
+    % ===== BLIND REVIEW VERSION =====
+    % IMPORTANT: For initial submission, DO NOT include author information.
+    % Author names, affiliations, and email addresses should only be added
+    % in the final camera-ready version after paper acceptance.
+    %
+    % Uncomment the author block below ONLY for camera-ready submission:
+    % -----------------------------------------------------------------------
+    % \begin{tabular}{ccc}
+    %     \begin{tabular}{c}
+    %         \textbf{First Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author1@email.com
+    %     \end{tabular}
+    %     &
+    %     \begin{tabular}{c}
+    %         \textbf{Second Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author2@email.com
+    %     \end{tabular}
+    %     &
+    %     \begin{tabular}{c}
+    %         \textbf{Third Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author3@email.com
+    %     \end{tabular}
+    % \end{tabular}
+    % \vspace{18pt}
+    % -----------------------------------------------------------------------
+    
 \end{center}
 ]
 
-% ===== ABSTRACT =====
-\noindent\textbf{\textit{Abstract}}\textemdash\textit{Provide a brief summary of your extended abstract here. The Abstract should be about 80--120 words. Avoid using abbreviations and do not cite references in the Abstract. The abstract should clearly state the purpose of the research, methodology, key findings, and conclusions. This summary will be included in the IEEE Xplore Digital Library if the paper is accepted and published.}
+% ===== ABSTRACT (~150 words) =====
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Provide a concise summary of approximately 150 words. The abstract should clearly present the motivation for your research, the methodology employed, and the key findings or contributions of your work. Avoid using abbreviations, acronyms, or citations in the abstract. The abstract serves as a standalone summary that will appear in conference proceedings and digital libraries. Write in a clear, objective style that allows readers to quickly understand the significance and scope of your research. This is placeholder text to demonstrate the approximate length expected---replace this entire paragraph with your actual abstract content.}
 
 \vspace{6pt}
 
@@ -185,9 +198,9 @@
 % ===== INTRODUCTION =====
 \section{Introduction}
 
-These instructions provide a \LaTeX{} template for preparing extended abstracts for JCSEE Bangkok 2026. Extended abstracts may include figures and tables but must not exceed two (2) pages, including all figures, tables, references, and author information.
+This \LaTeX{} template is prepared for JCSSE 2026---The 23rd International Joint Conference on Computer Science and Software Engineering, to be held June 24--27, 2026 in Bangkok, Thailand. For extended abstracts (poster session), submissions must be limited to 1--2 pages. For full papers (regular/special sessions), submissions must not exceed 6 pages.
 
-This template follows the conference proceedings format, which is consistent with IEEE's General Proceedings Template. All text must be in a two-column format with fully justified text.
+All submissions must follow the IEEE Conference Proceedings format with A4 paper size. For blind review, author names and affiliations must be omitted. This template is pre-configured for the correct format---simply replace the placeholder content with your research.
 
 % ===== MAIN SECTIONS =====
 \section{Related Work}
@@ -253,9 +266,14 @@ Table~\ref{tab:example} presents the comparative results. Discuss your findings 
 Summarize your key findings and their implications. State the main contributions of your work and suggest directions for future research.
 
 % ===== ACKNOWLEDGEMENTS (Optional) =====
-\section*{Acknowledgements}
-
-If you wish to identify funding sources or significant contributions by others, include your acknowledgements here. Only include this section in the final camera-ready copy.
+% IMPORTANT: Comment out for blind review. Uncomment ONLY for camera-ready.
+% -----------------------------------------------------------------------
+% \section*{Acknowledgements}
+%
+% If you wish to identify funding sources or significant contributions by 
+% others, include your acknowledgements here. Only include this section 
+% in the final camera-ready copy after paper acceptance.
+% -----------------------------------------------------------------------
 
 % ===== REFERENCES =====
 % 9-point Times, single-spaced
@@ -279,17 +297,24 @@ If you wish to identify funding sources or significant contributions by others, 
 \end{small}
 
 % ===== ABOUT THE AUTHORS =====
-\section*{About the Authors}
-
-\textbf{First Author Name} is a Graduate Student at [University/Institution]. Research interests include [list interests]. Contact: author1@email.com
-
-\vspace{6pt}
-
-\textbf{Second Author Name} is [position] at [University/Institution]. Research focus includes [list focus areas]. Contact: author2@email.com
-
-\vspace{6pt}
-
-\textbf{Third Author Name} is [position] at [University/Institution]. Specializes in [list specialization]. Contact: author3@email.com
+% IMPORTANT: Comment out this entire section for blind review submission.
+% Uncomment ONLY for final camera-ready version after acceptance.
+% -----------------------------------------------------------------------
+% \section*{About the Authors}
+%
+% \textbf{First Author Name} is a Graduate Student at [University/Institution]. 
+% Research interests include [list interests]. Contact: author1@email.com
+%
+% \vspace{6pt}
+%
+% \textbf{Second Author Name} is [position] at [University/Institution]. 
+% Research focus includes [list focus areas]. Contact: author2@email.com
+%
+% \vspace{6pt}
+%
+% \textbf{Third Author Name} is [position] at [University/Institution]. 
+% Specializes in [list specialization]. Contact: author3@email.com
+% -----------------------------------------------------------------------
 
 % Balance columns on last page
 \balance

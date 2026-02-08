@@ -1,0 +1,379 @@
+% JCSSE Bangkok 2026 - Full Paper Template (Regular/Special Session)
+% The 23rd International Joint Conference on Computer Science and Software Engineering
+% 24-27 June 2026, Bangkok, Thailand
+% https://jcsse2026.org/
+%
+% IEEE Conference Proceedings format - A4 paper, Times New Roman 10pt
+% Full Paper: up to 6 pages
+% BLIND REVIEW: Do NOT include author names/affiliations until camera-ready
+
+\documentclass[10pt,twocolumn,a4paper]{article}
+
+% ===== PACKAGES =====
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}                      % Times New Roman font
+\usepackage{mathptmx}                   % Times for math
+\usepackage{graphicx}                   % For figures
+\usepackage{amsmath,amssymb}            % Math support
+\usepackage{caption}                    % Caption styling
+\usepackage{array}                      % Table improvements
+\usepackage{booktabs}                   % Professional tables
+\usepackage{enumitem}                   % List customization
+\usepackage{hyperref}                   % Hyperlinks (disabled for IEEE style)
+\usepackage{xcolor}                     % Color support
+\usepackage{balance}                    % Balance last page columns
+\usepackage{titlesec}                   % Section formatting
+\usepackage{fancyhdr}                   % Header/footer control
+\usepackage{flushend}                   % Balance final page columns
+\usepackage{algorithm}                  % Algorithm environment
+\usepackage{algorithmic}                % Algorithm formatting
+\usepackage{cite}                       % Citation handling
+
+% ===== PAGE LAYOUT (A4 Paper - IEEE Standard) =====
+% A4: 210mm x 297mm
+% Top margin: 19mm, Bottom: 43mm, Left/Right: 13mm
+% Column width: 88mm, Column gap: 6mm
+\usepackage[
+    a4paper,
+    top=19mm,
+    bottom=43mm,
+    left=13mm,
+    right=13mm,
+    columnsep=6mm
+]{geometry}
+
+% ===== NO PAGE NUMBERS =====
+\pagestyle{empty}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ===== HYPERREF SETUP (disable visible links per IEEE style) =====
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+    hidelinks
+}
+
+% ===== SECTION FORMATTING =====
+% First-order headings: 10pt small caps, centered, 12pt before, 6pt after
+\titleformat{\section}
+    {\normalfont\normalsize\scshape\centering}
+    {}
+    {0pt}
+    {}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+% Second-order headings: 10pt italic, flush left, Roman numerals, 9pt before, 3pt after
+\titleformat{\subsection}
+    {\normalfont\normalsize\itshape}
+    {\Roman{subsection}.}
+    {0.5em}
+    {}
+\titlespacing*{\subsection}{0pt}{9pt}{3pt}
+
+% Third-order headings: 10pt italic, 6pt before, 3pt after
+\titleformat{\subsubsection}
+    {\normalfont\normalsize\itshape}
+    {\alph{subsubsection})}
+    {0.5em}
+    {}
+\titlespacing*{\subsubsection}{0pt}{6pt}{3pt}
+
+% Reset numbering
+\renewcommand{\thesubsection}{\Roman{subsection}}
+\renewcommand{\thesubsubsection}{\alph{subsubsection}}
+
+% ===== CAPTION FORMATTING =====
+% 10pt Times, small caps, left-justified
+\captionsetup{
+    font=small,
+    labelfont={sc},
+    justification=justified,
+    singlelinecheck=false,
+    skip=6pt
+}
+\captionsetup[figure]{position=below}
+\captionsetup[table]{position=above}
+
+% ===== PARAGRAPH FORMATTING =====
+\setlength{\parindent}{1pc}             % 1 pica indent (~0.17 inch)
+\setlength{\parskip}{0pt}               % No space between paragraphs
+
+% ===== LIST FORMATTING =====
+\setlist[itemize]{
+    leftmargin=0.5in,
+    topsep=0pt,
+    partopsep=0pt,
+    parsep=0pt,
+    itemsep=0pt
+}
+\setlist[enumerate]{
+    leftmargin=0.5in,
+    topsep=0pt,
+    partopsep=0pt,
+    parsep=0pt,
+    itemsep=0pt
+}
+
+% ===== CUSTOM COMMANDS =====
+% Abstract environment (10pt bold italic)
+\renewenvironment{abstract}{%
+    \noindent\textbf{\textit{Abstract}}\textemdash\textbf{\textit{}}%
+}{%
+    \par\vspace{6pt}
+}
+
+% Index Terms
+\newcommand{\indexterms}[1]{%
+    \noindent\textbf{\textit{Index Terms}}\textemdash\textit{#1}%
+    \par\vspace{12pt}
+}
+
+% Source for figures/tables
+\newcommand{\source}[1]{%
+    \vspace{1pt}
+    {\footnotesize Source: #1}
+}
+
+% ===== DOCUMENT =====
+\begin{document}
+
+% ===== TITLE =====
+\twocolumn[
+\begin{center}
+    {\fontsize{24pt}{28pt}\selectfont Your Full Paper Title Here: Use Title Case Capitalization\par}
+    \vspace{18pt}
+    
+    % ===== BLIND REVIEW VERSION =====
+    % IMPORTANT: For initial submission, DO NOT include author information.
+    % Author names, affiliations, and email addresses should only be added
+    % in the final camera-ready version after paper acceptance.
+    %
+    % Uncomment the author block below ONLY for camera-ready submission:
+    % -----------------------------------------------------------------------
+    % \begin{tabular}{ccc}
+    %     \begin{tabular}{c}
+    %         \textbf{First Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author1@email.com
+    %     \end{tabular}
+    %     &
+    %     \begin{tabular}{c}
+    %         \textbf{Second Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author2@email.com
+    %     \end{tabular}
+    %     &
+    %     \begin{tabular}{c}
+    %         \textbf{Third Author Name} \\
+    %         \textit{Affiliation} \\
+    %         author3@email.com
+    %     \end{tabular}
+    % \end{tabular}
+    % \vspace{18pt}
+    % -----------------------------------------------------------------------
+    
+\end{center}
+]
+
+% ===== ABSTRACT (~150 words) =====
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Provide a concise summary of approximately 150 words. The abstract should clearly present the research objectives, the methodology employed, the key results obtained, and the main conclusions drawn from your work. Avoid using abbreviations, acronyms, or citations in the abstract. The abstract serves as a standalone summary that will appear in conference proceedings and digital libraries such as IEEE Xplore. Write in a clear, objective style that allows readers to quickly understand the significance and scope of your research. This placeholder demonstrates the approximate length expected---replace this entire paragraph with your actual abstract content.}
+
+\vspace{6pt}
+
+% ===== INDEX TERMS =====
+\noindent\textbf{\textit{Index Terms}}\textemdash\textit{First keyword, second keyword, third keyword, fourth keyword.}
+
+\vspace{12pt}
+
+% ===== INTRODUCTION =====
+\section{Introduction}
+
+This \LaTeX{} template is prepared for JCSSE 2026---The 23rd International Joint Conference on Computer Science and Software Engineering, to be held June 24--27, 2026 in Bangkok, Thailand. Full papers for regular and special sessions must not exceed 6 pages and should provide a complete description of the research including objectives, methods, results, and conclusions.
+
+All submissions must follow the IEEE Conference Proceedings format with A4 paper size. For blind review, author names and affiliations must be omitted from the initial submission. This template is pre-configured for the correct format---simply replace the placeholder content with your research.
+
+Introduce your research topic, motivation, and the problem you are addressing. Clearly state your research questions or hypotheses. Provide context for why this research is significant and what gap in the existing literature it addresses.
+
+The remainder of this paper is organized as follows: Section~II reviews related work. Section~III describes the proposed methodology. Section~IV presents experimental results and discussion. Section~V concludes the paper with future directions.
+
+% ===== RELATED WORK =====
+\section{Related Work}
+
+\subsection{Background}
+
+Provide comprehensive background information relevant to your research. Discuss the theoretical foundations and key concepts that underpin your work. This section should demonstrate your understanding of the domain and establish the context for your contributions.
+
+\subsection{Literature Review}
+
+Review the existing literature systematically. Discuss prior work that is most relevant to your research, including both seminal papers and recent advances. Identify the strengths and limitations of previous approaches~[1].
+
+When citing multiple works, combine citations appropriately~[2], [3]. Compare and contrast different methodologies used in prior research~[4], [5].
+
+\subsection{Research Gap}
+
+Clearly articulate the gap in existing research that your work addresses. Explain why current solutions are insufficient and how your approach differs from or improves upon previous methods. This justification is crucial for establishing the novelty and contribution of your work.
+
+% ===== METHODOLOGY =====
+\section{Proposed Methodology}
+
+\subsection{System Overview}
+
+Describe your proposed approach, system, or methodology in detail. Provide a high-level overview first, then delve into the specifics. Use figures to illustrate your system architecture or workflow.
+
+% Example figure
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=\columnwidth]{system_architecture.png}
+    \framebox[\columnwidth]{\rule{0pt}{1.5in}} % Placeholder - replace with actual figure
+    \caption{System architecture overview. Provide a detailed description of your proposed system or methodology.}
+    \label{fig:architecture}
+\end{figure}
+
+As shown in Figure~\ref{fig:architecture}, the proposed system consists of...
+
+\subsection{Algorithm Design}
+
+Present the core algorithms or methods used in your research. You can include pseudocode using the algorithm environment:
+
+\begin{algorithm}[htbp]
+\caption{Example Algorithm}
+\label{alg:example}
+\begin{algorithmic}[1]
+\REQUIRE Input data $X$
+\ENSURE Output result $Y$
+\STATE Initialize parameters
+\FOR{each element $x$ in $X$}
+    \STATE Process element
+    \IF{condition is met}
+        \STATE Apply transformation
+    \ENDIF
+\ENDFOR
+\RETURN $Y$
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:example} describes the main procedure...
+
+\subsection{Implementation Details}
+
+Provide implementation details including programming languages, frameworks, libraries, and hardware specifications used. This information is essential for reproducibility.
+
+% ===== EXPERIMENTAL SETUP =====
+\section{Experimental Evaluation}
+
+\subsection{Dataset Description}
+
+Describe the datasets used in your experiments. Include information about data sources, size, characteristics, and any preprocessing steps applied.
+
+\subsection{Evaluation Metrics}
+
+Define the metrics used to evaluate your approach. Explain why these metrics are appropriate for your research problem.
+
+\subsection{Baseline Methods}
+
+Describe the baseline methods or state-of-the-art approaches against which you compare your method.
+
+% ===== RESULTS =====
+\section{Results and Discussion}
+
+\subsection{Quantitative Results}
+
+Present your experimental results with appropriate tables and figures.
+
+% Example table
+\begin{table}[htbp]
+    \caption{Comparison of Methods}
+    \label{tab:comparison}
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Method} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+        \hline
+        Baseline 1 & 0.75 & 0.72 & 0.73 \\
+        Baseline 2 & 0.78 & 0.74 & 0.76 \\
+        \textbf{Proposed} & \textbf{0.85} & \textbf{0.82} & \textbf{0.83} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:comparison} presents the comparative results. Our proposed method achieves significant improvements across all evaluation metrics.
+
+\subsection{Qualitative Analysis}
+
+Provide qualitative analysis of your results. Discuss specific examples, case studies, or visualizations that demonstrate the effectiveness of your approach.
+
+\subsection{Discussion}
+
+Interpret your results in the context of your research questions. Discuss the implications of your findings, potential limitations, and how your results compare to prior work. Address any unexpected results and provide explanations.
+
+Analyze the strengths and weaknesses of your approach. Discuss scenarios where your method performs well and cases where it may have limitations.
+
+% ===== CONCLUSION =====
+\section{Conclusion}
+
+Summarize the key contributions of your work. Restate the main findings and their significance. Discuss the broader implications of your research for the field.
+
+\subsection{Future Work}
+
+Outline potential directions for future research. Discuss how your work could be extended or improved, and identify open problems that remain to be addressed.
+
+% ===== ACKNOWLEDGEMENTS (Optional) =====
+% IMPORTANT: Comment out for blind review. Uncomment ONLY for camera-ready.
+% -----------------------------------------------------------------------
+% \section*{Acknowledgements}
+%
+% If you wish to identify funding sources or significant contributions by 
+% others, include your acknowledgements here. Only include this section 
+% in the final camera-ready copy after paper acceptance.
+% -----------------------------------------------------------------------
+
+% ===== REFERENCES =====
+% 9-point Times, single-spaced
+\section*{References}
+\begin{small}
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=1pt, parsep=0pt]
+    \item I. Thompson, ``Women and feminism in technical communication,'' \textit{J. Bus. Tech. Commun.}, vol.~13, no.~2, pp.~154--178, 1999.
+    
+    \item M.~S. MacNealy, \textit{Strategies for Empirical Research in Writing}. Boston, MA: Allyn and Bacon, 1999.
+    
+    \item J.~H. Watt and S.~A. van den Berg, \textit{Research Methods for Communication Science}. Boston, MA: Allyn and Bacon, 1995.
+    
+    \item S. Kleinmann, ``The reciprocal relationship of workplace culture and review,'' in \textit{Writing in the Workplace: New Research Perspectives}, R.~Spilka, Ed. Carbondale, IL: Southern Illinois University Press, 1993, pp.~56--70.
+    
+    \item K.~St. Amant, ``Virtual office communication protocols: A system for managing international virtual teams,'' in \textit{Proc. IEEE Int. Prof. Commun. Conf.}, 2005, pp.~703--717.
+    
+    \item Structural Engineering Society--International. [Online]. Available: http://www.seaint.org
+    
+    \item M. Tohidi et al., ``Getting the right design and the design right: Testing many is better than one,'' in \textit{Proc. ACM-SIGCHI Conf. on Human Factors in Computing Syst. (CHI'06)}, 2006, pp.~1243--1252.
+    
+    \item A. Author et al., ``Another relevant paper title,'' in \textit{Proc. IEEE Conf.}, 2024, pp.~100--110.
+\end{enumerate}
+\end{small}
+
+% ===== ABOUT THE AUTHORS =====
+% IMPORTANT: Comment out this entire section for blind review submission.
+% Uncomment ONLY for final camera-ready version after acceptance.
+% -----------------------------------------------------------------------
+% \section*{About the Authors}
+%
+% \textbf{First Author Name} is a Graduate Student at [University/Institution]. 
+% Research interests include [list interests]. Contact: author1@email.com
+%
+% \vspace{6pt}
+%
+% \textbf{Second Author Name} is [position] at [University/Institution]. 
+% Research focus includes [list focus areas]. Contact: author2@email.com
+%
+% \vspace{6pt}
+%
+% \textbf{Third Author Name} is [position] at [University/Institution]. 
+% Specializes in [list specialization]. Contact: author3@email.com
+% -----------------------------------------------------------------------
+
+% Balance columns on last page
+\balance
+
+\end{document}
