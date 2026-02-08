@@ -1,0 +1,297 @@
+% JCSEE Bangkok 2026 - Extended Abstract Template
+% IEEE-style two-column format for conference proceedings
+% Maximum 2 pages including figures, tables, references, and author information
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+% ===== PACKAGES =====
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}                      % Times New Roman font
+\usepackage{mathptmx}                   % Times for math
+\usepackage{graphicx}                   % For figures
+\usepackage{amsmath,amssymb}            % Math support
+\usepackage{caption}                    % Caption styling
+\usepackage{array}                      % Table improvements
+\usepackage{booktabs}                   % Professional tables
+\usepackage{enumitem}                   % List customization
+\usepackage{hyperref}                   % Hyperlinks (disabled for IEEE style)
+\usepackage{xcolor}                     % Color support
+\usepackage{balance}                    % Balance last page columns
+\usepackage{titlesec}                   % Section formatting
+\usepackage{fancyhdr}                   % Header/footer control
+\usepackage{lipsum}                     % Dummy text (remove in final)
+
+% ===== PAGE LAYOUT =====
+% Print area: 6-7/8 inches (17.5 cm) wide by 8-7/8 inches (22.54 cm) high
+% Columns: 3-1/4 inches (8.25 cm) wide with 5/16 inch (0.8 cm) gap
+\usepackage[
+    letterpaper,
+    top=1in,
+    bottom=1.125in,
+    left=0.75in,
+    right=0.75in,
+    columnsep=0.3125in
+]{geometry}
+
+% ===== NO PAGE NUMBERS =====
+\pagestyle{empty}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ===== HYPERREF SETUP (disable visible links per IEEE style) =====
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+    hidelinks
+}
+
+% ===== SECTION FORMATTING =====
+% First-order headings: 10pt small caps, centered, 12pt before, 6pt after
+\titleformat{\section}
+    {\normalfont\normalsize\scshape\centering}
+    {}
+    {0pt}
+    {}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+% Second-order headings: 10pt italic, flush left, Roman numerals, 9pt before, 3pt after
+\titleformat{\subsection}
+    {\normalfont\normalsize\itshape}
+    {\Roman{subsection}.}
+    {0.5em}
+    {}
+\titlespacing*{\subsection}{0pt}{9pt}{3pt}
+
+% Reset subsection numbering within sections
+\renewcommand{\thesubsection}{\Roman{subsection}}
+
+% ===== CAPTION FORMATTING =====
+% 10pt Times, small caps, left-justified
+\captionsetup{
+    font=small,
+    labelfont={sc},
+    justification=justified,
+    singlelinecheck=false,
+    skip=6pt
+}
+\captionsetup[figure]{position=below}
+\captionsetup[table]{position=above}
+
+% ===== PARAGRAPH FORMATTING =====
+\setlength{\parindent}{1pc}             % 1 pica indent (~0.17 inch)
+\setlength{\parskip}{0pt}               % No space between paragraphs
+
+% ===== LIST FORMATTING =====
+\setlist[itemize]{
+    leftmargin=0.5in,
+    topsep=0pt,
+    partopsep=0pt,
+    parsep=0pt,
+    itemsep=0pt
+}
+\setlist[enumerate]{
+    leftmargin=0.5in,
+    topsep=0pt,
+    partopsep=0pt,
+    parsep=0pt,
+    itemsep=0pt
+}
+
+% ===== CUSTOM COMMANDS =====
+% Title formatting (24pt, centered)
+\newcommand{\papertitle}[1]{%
+    \twocolumn[%
+        \begin{center}
+            {\fontsize{24pt}{28pt}\selectfont #1 \par}
+            \vspace{12pt}
+        \end{center}
+    ]
+}
+
+% Author block
+\newcommand{\authorblock}[3]{%
+    \begin{tabular}{c}
+        \textbf{#1} \\
+        \textit{#2} \\
+        #3
+    \end{tabular}
+}
+
+% Abstract environment (10pt bold italic)
+\renewenvironment{abstract}{%
+    \noindent\textbf{\textit{Abstract}}\textemdash\textbf{\textit{}}%
+}{%
+    \par\vspace{6pt}
+}
+
+% Index Terms
+\newcommand{\indexterms}[1]{%
+    \noindent\textbf{\textit{Index Terms}}\textemdash\textit{#1}%
+    \par\vspace{12pt}
+}
+
+% Source for figures/tables
+\newcommand{\source}[1]{%
+    \vspace{1pt}
+    {\footnotesize Source: #1}
+}
+
+% ===== DOCUMENT =====
+\begin{document}
+
+% ===== TITLE =====
+\twocolumn[
+\begin{center}
+    {\fontsize{24pt}{28pt}\selectfont Extended Abstract: Your Paper Title Here\par}
+    \vspace{18pt}
+    
+    % ===== AUTHORS (adjust columns as needed) =====
+    % One author: center; Two: left/right; Three: three columns
+    \begin{tabular}{ccc}
+        \begin{tabular}{c}
+            \textbf{First Author Name} \\
+            \textit{Affiliation} \\
+            author1@email.com
+        \end{tabular}
+        &
+        \begin{tabular}{c}
+            \textbf{Second Author Name} \\
+            \textit{Affiliation} \\
+            author2@email.com
+        \end{tabular}
+        &
+        \begin{tabular}{c}
+            \textbf{Third Author Name} \\
+            \textit{Affiliation} \\
+            author3@email.com
+        \end{tabular}
+    \end{tabular}
+    \vspace{18pt}
+\end{center}
+]
+
+% ===== ABSTRACT =====
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Provide a brief summary of your extended abstract here. The Abstract should be about 80--120 words. Avoid using abbreviations and do not cite references in the Abstract. The abstract should clearly state the purpose of the research, methodology, key findings, and conclusions. This summary will be included in the IEEE Xplore Digital Library if the paper is accepted and published.}
+
+\vspace{6pt}
+
+% ===== INDEX TERMS =====
+\noindent\textbf{\textit{Index Terms}}\textemdash\textit{First keyword, second keyword, third keyword, fourth keyword.}
+
+\vspace{12pt}
+
+% ===== INTRODUCTION =====
+\section{Introduction}
+
+These instructions provide a \LaTeX{} template for preparing extended abstracts for JCSEE Bangkok 2026. Extended abstracts may include figures and tables but must not exceed two (2) pages, including all figures, tables, references, and author information.
+
+This template follows the conference proceedings format, which is consistent with IEEE's General Proceedings Template. All text must be in a two-column format with fully justified text.
+
+% ===== MAIN SECTIONS =====
+\section{Related Work}
+
+\subsection{Literature Review}
+
+Include your literature review here. Type your main text in 10-point Times, single-spaced. All paragraphs should be indented approximately 1/6-inch. Be sure your text is fully justified---that is, flush left and flush right.
+
+When citing references, use square brackets. For example, previous research has shown significant results in this area~[1]. Multiple citations can be combined~[2], [3].
+
+\subsection{Research Gap}
+
+Describe the research gap your work addresses. Use proper formatting for any special terms or variables.
+
+% ===== METHODOLOGY =====
+\section{Methodology}
+
+Describe your research methodology here. You can include equations as needed. Number equations consecutively with equation numbers in parentheses flush with the right margin:
+
+\begin{equation}
+    a + b = c
+\end{equation}
+
+Be sure that symbols in your equation have been defined before the equation appears or immediately following. Use ``Equation~(1)'' at the beginning of a sentence, but otherwise use ``(1)'' to reference equations.
+
+% ===== RESULTS =====
+\section{Results and Discussion}
+
+Present your results here. You can include figures and tables as needed.
+
+% Example figure
+\begin{figure}[htbp]
+    \centering
+    % \includegraphics[width=\columnwidth]{your_figure.png}
+    \framebox[\columnwidth]{\rule{0pt}{1.5in}} % Placeholder - replace with actual figure
+    \caption{Caption style for describing figures. Provide a short title followed by a detailed explanation of the figure content.}
+    \label{fig:example}
+\end{figure}
+
+As shown in Figure~\ref{fig:example}, the results demonstrate... Continue your discussion here.
+
+% Example table
+\begin{table}[htbp]
+    \caption{Table Type Styles}
+    \label{tab:example}
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Table Head} & \textbf{Column Head} & \textbf{Column Head} \\
+        \hline
+        Table column subhead & Subhead & Subhead \\
+        \hline
+        Table copy & More table copy & Data \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Table~\ref{tab:example} presents the comparative results. Discuss your findings in detail here.
+
+% ===== CONCLUSION =====
+\section{Conclusion}
+
+Summarize your key findings and their implications. State the main contributions of your work and suggest directions for future research.
+
+% ===== ACKNOWLEDGEMENTS (Optional) =====
+\section*{Acknowledgements}
+
+If you wish to identify funding sources or significant contributions by others, include your acknowledgements here. Only include this section in the final camera-ready copy.
+
+% ===== REFERENCES =====
+% 9-point Times, single-spaced
+\section*{References}
+\begin{small}
+\begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=1pt, parsep=0pt]
+    \item I. Thompson, ``Women and feminism in technical communication,'' \textit{J. Bus. Tech. Commun.}, vol.~13, no.~2, pp.~154--178, 1999.
+    
+    \item M.~S. MacNealy, \textit{Strategies for Empirical Research in Writing}. Boston, MA: Allyn and Bacon, 1999.
+    
+    \item J.~H. Watt and S.~A. van den Berg, \textit{Research Methods for Communication Science}. Boston, MA: Allyn and Bacon, 1995.
+    
+    \item S. Kleinmann, ``The reciprocal relationship of workplace culture and review,'' in \textit{Writing in the Workplace: New Research Perspectives}, R.~Spilka, Ed. Carbondale, IL: Southern Illinois University Press, 1993, pp.~56--70.
+    
+    \item K.~St. Amant, ``Virtual office communication protocols: A system for managing international virtual teams,'' in \textit{Proc. IEEE Int. Prof. Commun. Conf.}, 2005, pp.~703--717.
+    
+    \item Structural Engineering Society--International. [Online]. Available: http://www.seaint.org
+    
+    \item M. Tohidi et al., ``Getting the right design and the design right: Testing many is better than one,'' in \textit{Proc. ACM-SIGCHI Conf. on Human Factors in Computing Syst. (CHI'06)}, 2006, pp.~1243--1252.
+\end{enumerate}
+\end{small}
+
+% ===== ABOUT THE AUTHORS =====
+\section*{About the Authors}
+
+\textbf{First Author Name} is a Graduate Student at [University/Institution]. Research interests include [list interests]. Contact: author1@email.com
+
+\vspace{6pt}
+
+\textbf{Second Author Name} is [position] at [University/Institution]. Research focus includes [list focus areas]. Contact: author2@email.com
+
+\vspace{6pt}
+
+\textbf{Third Author Name} is [position] at [University/Institution]. Specializes in [list specialization]. Contact: author3@email.com
+
+% Balance columns on last page
+\balance
+
+\end{document}
