@@ -1,0 +1,304 @@
+% =============================================================================
+% JCSSE 2026 Conference Poster — EADD
+% Explainable Adversarial Drift Detection for MLOps Feature Monitoring
+% Portrait A0 poster using beamerposter
+% =============================================================================
+\documentclass[final]{beamer}
+\usepackage[orientation=portrait, size=a0, scale=1.4]{beamerposter}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usepackage{multicol}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc}
+
+% ── Colour palette (Mahidol blue + accent) ──────────────────────────────────
+\definecolor{MahidolBlue}{RGB}{0,51,102}
+\definecolor{MahidolGold}{RGB}{204,153,0}
+\definecolor{LightBg}{RGB}{235,241,249}
+\definecolor{AccentGreen}{RGB}{34,139,34}
+\definecolor{AccentRed}{RGB}{178,34,34}
+
+% ── Beamer theme ─────────────────────────────────────────────────────────────
+\setbeamercolor{block title}{fg=white, bg=MahidolBlue}
+\setbeamercolor{block body}{fg=black, bg=LightBg}
+\setbeamercolor{block alerted title}{fg=white, bg=AccentRed}
+\setbeamercolor{block alerted body}{fg=black, bg=LightBg}
+\setbeamercolor{block example title}{fg=white, bg=AccentGreen}
+\setbeamercolor{block example body}{fg=black, bg=LightBg}
+\setbeamertemplate{navigation symbols}{}
+\setbeamerfont{block title}{size=\Large, series=\bfseries}
+
+% ── Poster header ────────────────────────────────────────────────────────────
+\setbeamertemplate{headline}{
+  \leavevmode
+  \begin{beamercolorbox}[wd=\paperwidth, ht=12cm]{headline}
+    \begin{center}
+      \vskip1cm
+      {\color{MahidolBlue}\VERYHuge\bfseries Explainable Adversarial Drift Detection\\[0.3em]
+       for MLOps Feature Monitoring}\\[1.0cm]
+      {\color{black}\LARGE Nusrat Begum\textsuperscript{1} \qquad Thanapon Noraset\textsuperscript{1} \qquad Suppawong Tuarob\textsuperscript{1}}\\[0.4cm]
+      {\color{MahidolBlue}\Large \textsuperscript{1}Faculty of Information and Communication Technology, Mahidol University, Thailand}\\[0.3cm]
+      {\large\texttt{nusrat.beg@student.mahidol.edu}}
+      \vskip0.5cm
+    \end{center}
+  \end{beamercolorbox}
+  \begin{beamercolorbox}[wd=\paperwidth, ht=0.4cm]{separator}
+    \color{MahidolGold}\rule{\paperwidth}{0.4cm}
+  \end{beamercolorbox}
+}
+
+% ── Footer ───────────────────────────────────────────────────────────────────
+\setbeamertemplate{footline}{
+  \begin{beamercolorbox}[wd=\paperwidth, ht=2cm]{footline}
+    \begin{center}
+      \vskip0.3cm
+      {\color{MahidolBlue}\large JCSSE 2026 --- 23rd International Joint Conference on Computer Science and Software Engineering $\cdot$ June 24--27, 2026 $\cdot$ Bangkok, Thailand}
+    \end{center}
+  \end{beamercolorbox}
+}
+
+\begin{document}
+
+\begin{frame}[t]
+\vskip1cm
+
+% ── Three-column layout ─────────────────────────────────────────────────────
+\begin{columns}[t]
+
+% ====================== LEFT COLUMN =========================================
+\begin{column}{0.31\textwidth}
+
+% --- Motivation ---
+\begin{block}{1. Motivation}
+\begin{itemize}
+  \item ML models in production suffer from \textbf{distribution drift}: input feature distributions shift over time, silently degrading predictions.
+  \item Existing unsupervised detectors signal \textit{that} drift occurred but not \textit{which} features drifted or \textit{what} to do about it.
+  \item \textbf{Gap:} No unsupervised detector simultaneously provides statistical rigor, feature-level explainability, and automated remediation.
+\end{itemize}
+\vskip0.5cm
+{\color{MahidolBlue}\large\bfseries Research Question:}\\[6pt]
+\textit{Can adversarial validation be extended with permutation testing and feature attribution to provide statistically sound, explainable, and actionable drift detection across diverse drift types?}
+\end{block}
+
+\vskip1cm
+
+% --- Methodology ---
+\begin{block}{2. EADD Framework}
+
+\begin{center}
+\begin{tikzpicture}[
+    node distance=1.2cm and 0.5cm,
+    box/.style={rectangle, draw=MahidolBlue, fill=LightBg, text width=16cm, 
+                minimum height=2.4cm, align=center, font=\large,
+                rounded corners=6pt, line width=1.5pt},
+    arr/.style={-{Stealth[length=8pt]}, line width=2pt, MahidolBlue},
+    lbl/.style={font=\large\bfseries, MahidolBlue}
+  ]
+  \node[box] (step1) {\textbf{Step 1: Data Windowing}\\Reservoir sampling $W_{ref}=500$\\Sliding window $W_{cur}=200$};
+  \node[box, below=of step1] (step2) {\textbf{Step 2: Adversarial Classifier}\\LightGBM distinguishes $W_{ref}$ vs $W_{cur}$\\AUC-ROC $>$ 0.7 $\Rightarrow$ suspect drift};
+  \node[box, below=of step2] (step3) {\textbf{Step 3: Permutation Test}\\Shuffle labels $B=50$ times\\$p < 0.01 \Rightarrow$ confirm drift};
+  \node[box, below=of step3] (step4) {\textbf{Step 4: Attribution \& Prescription}\\TreeSHAP feature ranking\\Classify: univariate / subset / multivariate\\Automated remediation action};
+
+  \draw[arr] (step1) -- (step2);
+  \draw[arr] (step2) -- (step3);
+  \draw[arr] (step3) -- (step4);
+\end{tikzpicture}
+\end{center}
+
+\end{block}
+
+\vskip1cm
+
+% --- Key Innovation ---
+\begin{exampleblock}{Key Innovation}
+\large
+EADD is the \textbf{first unsupervised drift detector} that provides:
+\begin{enumerate}
+  \item \textbf{Statistical rigor} via permutation testing (zero false alarms)
+  \item \textbf{Feature-level explainability} via SHAP attribution
+  \item \textbf{Actionable prescriptions} mapping drift patterns to MLOps fixes
+\end{enumerate}
+\end{exampleblock}
+
+\end{column}
+
+% ====================== MIDDLE COLUMN =======================================
+\begin{column}{0.31\textwidth}
+
+% --- Experiment 1 ---
+\begin{block}{3. Experiment 1 — Temporal Drift Types}
+\large
+\textbf{Objective:} Can EADD detect all four temporal drift patterns?
+
+\vskip0.5cm
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Drift Type} & \textbf{EADD} & \textbf{D3} \\
+\midrule
+Abrupt        & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5} \\
+Gradual       & \color{AccentGreen}\textbf{5/5} & \color{AccentRed}\textbf{0/5} \\
+Incremental   & \color{AccentGreen}\textbf{5/5} & \color{AccentRed}\textbf{0/5} \\
+Recurring     & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5} \\
+\midrule
+\textbf{Overall} & \color{AccentGreen}\textbf{20/20} & \color{AccentRed}\textbf{10/20} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vskip0.3cm
+{\color{MahidolBlue}$\Rightarrow$} EADD: \textbf{100\%} detection rate \quad D3: \textbf{50\%} (fails on gradual \& incremental)
+\end{block}
+
+\vskip1cm
+
+% --- Experiment 2 ---
+\begin{block}{4. Experiment 2 — 13 Real-World Datasets}
+\large
+\textbf{Objective:} Benchmark against D3 on diverse real-world streams.
+
+\vskip0.5cm
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Dataset} & \textbf{EADD} & \textbf{D3} \\
+ & \textbf{MTD} & \textbf{MTD} \\
+\midrule
+Insects Abrupt       & 173   & 152.5 \\
+Insects Gradual      & 9{,}371 & 9{,}481 \\
+Insects Incr.\ Abrupt   & \textbf{31}    & 160   \\
+Insects Incr.\ Balanced & 102   & 104.5 \\
+Insects Reoccurring  & \textbf{131}  & 157   \\
+SineClusters         & \textbf{139}  & 229   \\
+WaveformDrift2       & \textbf{119}  & 169   \\
+\midrule
+\textbf{Avg.\ (13 datasets)} & \textbf{1{,}661} & 1{,}725 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vskip0.3cm
+{\color{MahidolBlue}$\Rightarrow$} \textbf{0\% missed detection rate} \quad MTD 3.7\% faster than D3
+\end{block}
+
+\vskip1cm
+
+% --- Experiment 3 ---
+\begin{block}{5. Experiment 3 — Explainability}
+\large
+\textbf{Objective:} Does SHAP correctly identify which features drifted?
+
+\vskip0.5cm
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccl}
+\toprule
+\textbf{Scenario} & \textbf{AUC} & \textbf{Top Feature} & \textbf{Correct?} \\
+\midrule
+Univariate    & 0.801 & F3 (49.7\%)   & \color{AccentGreen}\textbf{Yes} \\
+Subset        & 0.767 & F5, F2, F7       & \color{AccentGreen}\textbf{Yes} \\
+Multivariate  & 0.786 & $\leq$14.1\% each & \color{AccentGreen}\textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vskip0.3cm
+{\color{MahidolBlue}$\Rightarrow$} \textbf{100\% feature attribution accuracy} across all three drift patterns
+\end{block}
+
+\end{column}
+
+% ====================== RIGHT COLUMN ========================================
+\begin{column}{0.31\textwidth}
+
+% --- Experiment 4 ---
+\begin{block}{6. Experiment 4 — False Alarm Robustness}
+\large
+\textbf{Objective:} Do statistical noise patterns cause false alarms?
+
+\vskip0.5cm
+\begin{table}
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Noise Type} & \textbf{EADD FA} & \textbf{D3 FA} \\
+\midrule
+Gaussian       & \color{AccentGreen}\textbf{0} & 10.4 \\
+Autocorrelated & \color{AccentGreen}\textbf{0} & 87.4 \\
+Heteroscedastic & \color{AccentGreen}\textbf{0} & 10.4 \\
+Correlated     & \color{AccentGreen}\textbf{0} & 10.0 \\
+\midrule
+\textbf{Total} & \color{AccentGreen}\textbf{0} & \color{AccentRed}\textbf{118.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vskip0.3cm
+{\color{MahidolBlue}$\Rightarrow$} EADD: \textbf{zero false alarms} \quad D3: up to 87.4 on autocorrelated data\\[4pt]
+Mann--Whitney $p = 0.0101$ (statistically significant difference)
+\end{block}
+
+\vskip1cm
+
+% --- Summary ---
+\begin{alertblock}{Summary of Results}
+\large
+\renewcommand{\arraystretch}{1.4}
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{EADD} & \textbf{D3} \\
+\midrule
+Temporal coverage     & \textbf{4/4}  & 2/4 \\
+Real-world MDR        & \textbf{0\%}  & 7.7\% \\
+Avg.\ MTD (samples)   & \textbf{1{,}661} & 1{,}725 \\
+Feature attribution   & \textbf{3/3}  & --- \\
+False alarm total     & \textbf{0}    & 118.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{alertblock}
+
+\vskip1cm
+
+% --- Conclusion ---
+\begin{block}{7. Conclusions \& Future Work}
+\begin{itemize}
+  \item EADD transforms drift detection from a \textbf{binary alarm} into an \textbf{actionable diagnostic tool} with feature-level attribution and remediation prescriptions.
+  \item \textbf{Strengths:} 100\% temporal coverage, zero false alarms, correct feature identification in all tested scenarios, competitive detection speed.
+  \item \textbf{Limitations:} Computational overhead of retraining LightGBM per monitoring cycle; prescription rules are currently heuristic.
+  \item \textbf{Future directions:}
+  \begin{itemize}
+    \item Online incremental discriminator updates
+    \item Feedback-loop integration with CI/CD retraining
+    \item Extension to multi-modal data streams
+  \end{itemize}
+\end{itemize}
+\end{block}
+
+\vskip1cm
+
+% --- References ---
+\begin{block}{References}
+\small
+\begin{enumerate}
+  \item J.~Lu et al., ``Learning under concept drift: A review,'' \textit{IEEE TKDE}, 2018.
+  \item O.~G\"{o}z\"{u}a\c{c}{\i}k et al., ``Unsupervised concept drift detection with a discriminative classifier,'' \textit{ACM CIKM}, 2019.
+  \item B.~Lukats et al., ``Unsupervised concept drift detection from deep learning representations in real-time,'' \textit{CIKM}, 2025.
+  \item S.~M.~Lundberg and S.-I.~Lee, ``A unified approach to interpreting model predictions,'' \textit{NeurIPS}, 2017.
+  \item G.~Ke et al., ``LightGBM: A highly efficient gradient boosting decision tree,'' \textit{NeurIPS}, 2017.
+\end{enumerate}
+\end{block}
+
+\end{column}
+\end{columns}
+
+\end{frame}
+\end{document}

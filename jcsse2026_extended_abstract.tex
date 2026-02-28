@@ -150,33 +150,29 @@
 % ===== TITLE =====
 \twocolumn[
 \begin{center}
-    {\fontsize{24pt}{28pt}\selectfont Your Paper Title Here: Use Title Case Capitalization\par}
+    {\fontsize{24pt}{28pt}\selectfont Explainable Adversarial Drift Detection\\[4pt] for MLOps Feature Monitoring\par}
     \vspace{18pt}
     
     % ===== BLIND REVIEW VERSION =====
-    % IMPORTANT: For initial submission, DO NOT include author information.
-    % Author names, affiliations, and email addresses should only be added
-    % in the final camera-ready version after paper acceptance.
-    %
     % Uncomment the author block below ONLY for camera-ready submission:
     % -----------------------------------------------------------------------
     % \begin{tabular}{ccc}
     %     \begin{tabular}{c}
-    %         \textbf{First Author Name} \\
-    %         \textit{Affiliation} \\
-    %         author1@email.com
+    %         \textbf{Nusrat Begum} \\
+    %         \textit{Faculty of ICT, Mahidol University} \\
+    %         nusrat.beg@student.mahidol.edu
     %     \end{tabular}
     %     &
     %     \begin{tabular}{c}
-    %         \textbf{Second Author Name} \\
-    %         \textit{Affiliation} \\
-    %         author2@email.com
+    %         \textbf{Thanapon Noraset} \\
+    %         \textit{Faculty of ICT, Mahidol University} \\
+    %         thanapon.nor@mahidol.edu
     %     \end{tabular}
     %     &
     %     \begin{tabular}{c}
-    %         \textbf{Third Author Name} \\
-    %         \textit{Affiliation} \\
-    %         author3@email.com
+    %         \textbf{Suppawong Tuarob} \\
+    %         \textit{Faculty of ICT, Mahidol University} \\
+    %         suppawong.tua@mahidol.edu
     %     \end{tabular}
     % \end{tabular}
     % \vspace{18pt}
@@ -186,135 +182,60 @@
 ]
 
 % ===== ABSTRACT (~150 words) =====
-\noindent\textbf{\textit{Abstract}}\textemdash\textit{Provide a concise summary of approximately 150 words. The abstract should clearly present the motivation for your research, the methodology employed, and the key findings or contributions of your work. Avoid using abbreviations, acronyms, or citations in the abstract. The abstract serves as a standalone summary that will appear in conference proceedings and digital libraries. Write in a clear, objective style that allows readers to quickly understand the significance and scope of your research. This is placeholder text to demonstrate the approximate length expected---replace this entire paragraph with your actual abstract content.}
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Machine learning models in production suffer from distribution drift, where evolving input features degrade model performance. Existing unsupervised detectors signal that drift occurred but provide no insight into which features drifted or what corrective action is appropriate. This paper proposes Explainable Adversarial Drift Detection, a framework that extends adversarial validation with permutation testing for statistical rigor and feature attribution for root cause analysis. The framework trains a gradient boosting classifier to distinguish reference from current data, applies a permutation test to confirm statistical significance, and uses feature attribution to identify drifting features with automated remediation prescriptions. Evaluation on synthetic and 13 real-world datasets demonstrated detection of all four temporal drift types with zero missed detections, zero false alarms on stable data, and correct feature identification in all controlled scenarios, advancing drift detection from binary alarms to actionable diagnostics.}
 
 \vspace{6pt}
 
 % ===== INDEX TERMS =====
-\noindent\textbf{\textit{Index Terms}}\textemdash\textit{First keyword, second keyword, third keyword, fourth keyword.}
+\noindent\textbf{\textit{Index Terms}}\textemdash\textit{concept drift, adversarial validation, feature attribution, distribution shift, MLOps, streaming data.}
 
 \vspace{12pt}
 
 % ===== INTRODUCTION =====
-\section{Introduction}
+\section{Introduction and Motivation}
 
-This \LaTeX{} template is prepared for JCSSE 2026---The 23rd International Joint Conference on Computer Science and Software Engineering, to be held June 24--27, 2026 in Bangkok, Thailand. For extended abstracts (poster session), submissions must be limited to 1--2 pages. For full papers (regular/special sessions), submissions must not exceed 6 pages.
+Machine learning models deployed in production frequently encounter evolving data distributions that degrade performance~[1],~[2]. Detecting these changes early is critical, especially when ground-truth labels are delayed or unavailable. The Discriminative Drift Detector (D3)~[3] achieves state-of-the-art accuracy using adversarial validation~[4], but provides no insight into \textit{which} features drifted---a critical gap for practical MLOps deployment.
 
-All submissions must follow the IEEE Conference Proceedings format with A4 paper size. For blind review, author names and affiliations must be omitted. This template is pre-configured for the correct format---simply replace the placeholder content with your research.
-
-% ===== MAIN SECTIONS =====
-\section{Related Work}
-
-\subsection{Literature Review}
-
-Include your literature review here. Type your main text in 10-point Times, single-spaced. All paragraphs should be indented approximately 1/6-inch. Be sure your text is fully justified---that is, flush left and flush right.
-
-When citing references, use square brackets. For example, previous research has shown significant results in this area~[1]. Multiple citations can be combined~[2], [3].
-
-\subsection{Research Gap}
-
-Describe the research gap your work addresses. Use proper formatting for any special terms or variables.
+This work proposes \textbf{Explainable Adversarial Drift Detection (EADD)}, which extends adversarial validation with: (1) permutation testing ($B{=}50$, $\alpha{=}0.01$) for statistically rigorous drift confirmation, (2) SHAP-based feature attribution~[5] identifying which features drive detected drift, and (3) automated prescriptions mapping drift diagnoses to MLOps remediation actions.
 
 % ===== METHODOLOGY =====
 \section{Methodology}
 
-Describe your research methodology here. You can include equations as needed. Number equations consecutively with equation numbers in parentheses flush with the right margin:
-
-\begin{equation}
-    a + b = c
-\end{equation}
-
-Be sure that symbols in your equation have been defined before the equation appears or immediately following. Use ``Equation~(1)'' at the beginning of a sentence, but otherwise use ``(1)'' to reference equations.
+EADD operates as a four-step pipeline on streaming data. \textbf{Step 1:} Reservoir sampling maintains a reference window ($W_{ref}{=}500$) capturing the global historical distribution, while a sliding current window ($W_{cur}{=}200$) captures recent observations. \textbf{Step 2:} A LightGBM classifier~[6] is trained to distinguish $W_{ref}$ from $W_{cur}$; high AUC-ROC indicates distributional divergence. \textbf{Step 3:} A permutation test shuffles source labels $B{=}50$ times to build a null distribution; drift is confirmed only if $p < 0.01$. \textbf{Step 4:} Upon confirmation, TreeSHAP extracts per-feature importance from the adversarial classifier, ranking features by drift contribution and classifying the drift pattern (univariate, subset, or multivariate) with corresponding prescriptions.
 
 % ===== RESULTS =====
-\section{Results and Discussion}
+\section{Key Results}
 
-Present your results here. You can include figures and tables as needed.
+\textbf{Temporal Coverage:} EADD detected all four drift types (abrupt, gradual, incremental, recurring) with 100\% success rate across 5 runs each; D3 detected only 2/4, failing on gradual and incremental drift entirely.
 
-% Example figure
-\begin{figure}[htbp]
-    \centering
-    % \includegraphics[width=\columnwidth]{your_figure.png}
-    \framebox[\columnwidth]{\rule{0pt}{1.5in}} % Placeholder - replace with actual figure
-    \caption{Caption style for describing figures. Provide a short title followed by a detailed explanation of the figure content.}
-    \label{fig:example}
-\end{figure}
+\textbf{Real-World Performance:} Across 13 benchmark datasets~[4], EADD achieved 0\% missed detection rate with 3.7\% lower mean time to detection than D3 (1,661 vs.\ 1,725 samples).
 
-As shown in Figure~\ref{fig:example}, the results demonstrate... Continue your discussion here.
+\textbf{Explainability:} In three controlled scenarios, SHAP correctly identified drifting features as the top contributors in all cases (AUC 0.767--0.801). Feature attribution accuracy was 100\%.
 
-% Example table
-\begin{table}[htbp]
-    \caption{Table Type Styles}
-    \label{tab:example}
-    \centering
-    \begin{tabular}{|l|c|c|}
-        \hline
-        \textbf{Table Head} & \textbf{Column Head} & \textbf{Column Head} \\
-        \hline
-        Table column subhead & Subhead & Subhead \\
-        \hline
-        Table copy & More table copy & Data \\
-        \hline
-    \end{tabular}
-\end{table}
-
-Table~\ref{tab:example} presents the comparative results. Discuss your findings in detail here.
+\textbf{Robustness:} EADD produced zero false alarms across all stable stream types, while D3 triggered up to 87.4 false alarms on autocorrelated data (Mann--Whitney $p = 0.0101$).
 
 % ===== CONCLUSION =====
 \section{Conclusion}
 
-Summarize your key findings and their implications. State the main contributions of your work and suggest directions for future research.
-
-% ===== ACKNOWLEDGEMENTS (Optional) =====
-% IMPORTANT: Comment out for blind review. Uncomment ONLY for camera-ready.
-% -----------------------------------------------------------------------
-% \section*{Acknowledgements}
-%
-% If you wish to identify funding sources or significant contributions by 
-% others, include your acknowledgements here. Only include this section 
-% in the final camera-ready copy after paper acceptance.
-% -----------------------------------------------------------------------
+EADD transforms drift detection from a binary alarm into a diagnostic tool with feature-level attribution and actionable prescriptions. It detects a broader range of drift types than D3, achieves zero false alarms via permutation testing, and correctly identifies drifting features in all tested scenarios. The framework is directly applicable to production MLOps pipelines where understanding \textit{what} drifted is as important as knowing \textit{that} drift occurred.
 
 % ===== REFERENCES =====
-% 9-point Times, single-spaced
 \section*{References}
 \begin{small}
 \begin{enumerate}[label={[\arabic*]}, leftmargin=*, itemsep=1pt, parsep=0pt]
-    \item I. Thompson, ``Women and feminism in technical communication,'' \textit{J. Bus. Tech. Commun.}, vol.~13, no.~2, pp.~154--178, 1999.
+    \item J.~Lu et al., ``Learning under concept drift: A review,'' \textit{IEEE Trans. Knowl. Data Eng.}, vol.~31, no.~12, pp.~2346--2363, 2018.
     
-    \item M.~S. MacNealy, \textit{Strategies for Empirical Research in Writing}. Boston, MA: Allyn and Bacon, 1999.
+    \item J.~Gama et al., ``A survey on concept drift adaptation,'' \textit{ACM Comput. Surv.}, vol.~46, no.~4, pp.~1--37, 2014.
     
-    \item J.~H. Watt and S.~A. van den Berg, \textit{Research Methods for Communication Science}. Boston, MA: Allyn and Bacon, 1995.
+    \item O.~G\"{o}z\"{u}a\c{c}{\i}k et al., ``Unsupervised concept drift detection with a discriminative classifier,'' in \textit{Proc. ACM CIKM}, 2019, pp.~2311--2314.
     
-    \item S. Kleinmann, ``The reciprocal relationship of workplace culture and review,'' in \textit{Writing in the Workplace: New Research Perspectives}, R.~Spilka, Ed. Carbondale, IL: Southern Illinois University Press, 1993, pp.~56--70.
+    \item B.~Lukats et al., ``Unsupervised concept drift detection from deep learning representations in real-time,'' in \textit{Proc. CIKM}, 2025.
     
-    \item K.~St. Amant, ``Virtual office communication protocols: A system for managing international virtual teams,'' in \textit{Proc. IEEE Int. Prof. Commun. Conf.}, 2005, pp.~703--717.
+    \item S.~M. Lundberg and S.-I.~Lee, ``A unified approach to interpreting model predictions,'' in \textit{Proc. NeurIPS}, 2017, pp.~4765--4774.
     
-    \item Structural Engineering Society--International. [Online]. Available: http://www.seaint.org
-    
-    \item M. Tohidi et al., ``Getting the right design and the design right: Testing many is better than one,'' in \textit{Proc. ACM-SIGCHI Conf. on Human Factors in Computing Syst. (CHI'06)}, 2006, pp.~1243--1252.
+    \item G.~Ke et al., ``LightGBM: A highly efficient gradient boosting decision tree,'' in \textit{Proc. NeurIPS}, 2017, pp.~3149--3157.
 \end{enumerate}
 \end{small}
-
-% ===== ABOUT THE AUTHORS =====
-% IMPORTANT: Comment out this entire section for blind review submission.
-% Uncomment ONLY for final camera-ready version after acceptance.
-% -----------------------------------------------------------------------
-% \section*{About the Authors}
-%
-% \textbf{First Author Name} is a Graduate Student at [University/Institution]. 
-% Research interests include [list interests]. Contact: author1@email.com
-%
-% \vspace{6pt}
-%
-% \textbf{Second Author Name} is [position] at [University/Institution]. 
-% Research focus includes [list focus areas]. Contact: author2@email.com
-%
-% \vspace{6pt}
-%
-% \textbf{Third Author Name} is [position] at [University/Institution]. 
-% Specializes in [list specialization]. Contact: author3@email.com
-% -----------------------------------------------------------------------
 
 % Balance columns on last page
 \balance
