@@ -176,12 +176,12 @@
 ]
 
 % ===== ABSTRACT (~150 words) =====
-\noindent\textbf{\textit{Abstract}}\textemdash\textit{Machine learning models in production environments suffer from distribution drift, where changes in input features degrade model performance over time. Existing unsupervised drift detectors signal that drift occurred but provide no insight into which features drifted or what corrective action is appropriate. This paper proposes Explainable Adversarial Drift Detection, a framework that extends adversarial validation with permutation testing for statistical rigor and feature attribution for root cause analysis. The framework employs a gradient boosting classifier to distinguish reference from current data windows, a permutation test for drift confirmation, and feature attribution to identify which specific features drive detected drift. Experimental evaluation on synthetic and 13 real-world benchmark datasets demonstrated that the proposed method detects all four temporal drift types with zero missed detections, produces zero false alarms on stable data including autocorrelated streams, and correctly identifies drifting features in all controlled scenarios.}
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Machine learning models in production environments suffer from distribution drift, where changes in input features degrade model performance over time. Existing unsupervised drift detectors signal that drift occurred but provide no insight into which features drifted or what corrective action is appropriate. This paper proposes Explainable Adversarial Drift Detection (EADD), a framework that extends discriminative classification with permutation testing for statistical rigor and feature attribution for root cause analysis. The framework employs a gradient boosting classifier to distinguish reference from current data windows, a permutation test for drift confirmation, and feature attribution to identify which specific features drive detected drift. Experimental evaluation on synthetic and 11 real-world benchmark datasets demonstrated that the proposed method detects all four temporal drift types with zero missed detections, produces zero false alarms on stable data including autocorrelated streams, and correctly identifies drifting features in all controlled scenarios.}
 
 \vspace{6pt}
 
 % ===== INDEX TERMS =====
-\noindent\textbf{\textit{Index Terms}}\textemdash\textit{concept drift, adversarial validation, feature attribution, distribution shift, MLOps, streaming data.}
+\noindent\textbf{\textit{Index Terms}}\textemdash\textit{concept drift, discriminative classification, feature attribution, distribution shift, MLOps, streaming data.}
 
 \vspace{12pt}
 
@@ -196,7 +196,7 @@ Current drift detection methods vary considerably. Statistical methods employ hy
 
 This paper proposes \textbf{Explainable Adversarial Drift Detection (EADD)}, a framework that addresses this explainability gap with three contributions:
 \begin{enumerate}
-    \item A streaming adversarial validation framework with LightGBM and reservoir sampling, validated through permutation testing ($B{=}50$, $\alpha{=}0.01$).
+    \item A streaming discriminative classification framework with LightGBM and reservoir sampling, validated through permutation testing ($B{=}50$, $\alpha{=}0.01$).
     \item SHAP-based root cause analysis that identifies which specific features drive detected drift.
     \item An automated prescription system providing actionable remediation recommendations based on drift patterns.
 \end{enumerate}
@@ -212,13 +212,13 @@ Drift detection methods can be classified by label availability. \textit{Supervi
 
 A comprehensive benchmark by Lukats et al.~[12] evaluated numerous unsupervised detectors on real-world streams and identified D3~[11] as the most robust overall. However, D3 uses logistic regression with a fixed AUC threshold and provides no feature-level diagnostics. Other benchmarked detectors include CSDDM~[17], IBDD~[18], OCDD~[19], SPLL~[20], and BNDM, each with characteristic limitations regarding false alarm rates or scalability.
 
-\subsection{Adversarial Validation}
+\subsection{Discriminative Distribution Testing}
 
-Adversarial validation frames distribution comparison as binary classification: if a classifier can reliably separate data from two time periods based solely on features, a distributional change has occurred~[15],~[16]. Pan et al.~[15] applied this at Uber for detecting train-deployment mismatch, and Qian et al.~[16] used it for credit scoring shift management. Lopez-Paz and Oquab~[21] provided theoretical foundations showing that discriminative two-sample tests can detect complex multivariate shifts that marginal tests miss.
+Discriminative distribution testing frames distribution comparison as binary classification: if a classifier can reliably separate data from two time periods based solely on features, a distributional change has occurred~[15],~[16]. This approach---sometimes called adversarial validation in industry---has been adopted at Uber for detecting train-deployment mismatch~[15] and for credit scoring shift management~[16]. Lopez-Paz and Oquab~[21] provided theoretical foundations showing that discriminative two-sample tests can detect complex multivariate shifts that marginal tests miss.
 
 \subsection{Explainability Gap}
 
-Despite strong detection accuracy, existing discriminative detectors discard the trained classifier after computing AUC, losing the information about \textit{which} features differentiate the distributions. Industrial evidence validates the need for feature-level diagnostics: Google's Vertex AI uses feature attribution monitoring that detected a critical degradation missed by input-distribution monitoring~[22]. Amazon SageMaker Clarify similarly integrates SHAP-based attribution monitoring~[23]. However, no existing academic drift detector combines multivariate adversarial detection with automated feature attribution and prescriptive diagnostics.
+Despite strong detection accuracy, existing discriminative detectors discard the trained classifier after computing AUC, losing the information about \textit{which} features differentiate the distributions. Industrial evidence validates the need for feature-level diagnostics: Google's Vertex AI uses feature attribution monitoring that detected a critical degradation missed by input-distribution monitoring~[22]. Amazon SageMaker Clarify similarly integrates SHAP-based attribution monitoring~[23]. However, no existing academic drift detector combines multivariate discriminative detection with automated feature attribution and prescriptive diagnostics.
 
 % ===== METHODOLOGY =====
 \section{Proposed Methodology}
@@ -230,7 +230,7 @@ EADD is a four-step pipeline designed for feature drift ($P(X)$ shift) detection
     \setlength{\fboxsep}{8pt}
     \fbox{\parbox{0.9\columnwidth}{\centering\small
     \textbf{Data Stream} $\rightarrow$ \textbf{Step 1:} Windowing\\[2pt]
-    $\rightarrow$ \textbf{Step 2:} Adversarial Validation (AUC)\\[2pt]
+    $\rightarrow$ \textbf{Step 2:} Discriminative Classification (AUC)\\[2pt]
     $\rightarrow$ AUC$>$0.7? $\rightarrow$ \textbf{Step 3:} Permutation Test\\[2pt]
     $\rightarrow$ $p<0.01$? $\rightarrow$ \textbf{Step 4:} SHAP Attribution\\[2pt]
     $\rightarrow$ \textbf{Drift Report + Prescription}
@@ -243,7 +243,7 @@ EADD is a four-step pipeline designed for feature drift ($P(X)$ shift) detection
 
 EADD maintains a reference window $W_{ref}$ ($N_{ref}{=}500$ samples) via reservoir sampling~[24] and a current window $W_{cur}$ ($N_{cur}{=}200$ samples) as a sliding window. Reservoir sampling ensures the reference captures the global distribution rather than only recent batches, which is critical for detecting gradual drift. Monitoring occurs every 50 samples.
 
-\subsection{Step 2: Adversarial Validation}
+\subsection{Step 2: Discriminative Classification}
 
 Samples from $W_{ref}$ are labeled 0 and from $W_{cur}$ labeled 1 to form a binary classification dataset. A LightGBM classifier~[25] is trained via stratified 5-fold cross-validation, and AUC-ROC is computed. AUC~$\approx$~0.5 indicates no drift; AUC~$\gg$~0.5 indicates distributional divergence. LightGBM is chosen over D3's logistic regression because it captures non-linear feature interactions, enabling detection of complex drift patterns.
 
@@ -295,7 +295,7 @@ Four experiments were designed to validate EADD's detection accuracy, explainabi
 
 \textbf{Experiment 1 (Temporal Patterns):} Synthetic streams ($n{=}10{,}000$, $d{=}5$) with controlled abrupt, gradual, incremental, and recurring drift injected at $t{=}5{,}000$. Five runs per drift type. Detection success rate and delay were measured against D3.
 
-\textbf{Experiment 2 (Real-World Benchmark):} 13 real-world datasets from the Lukats et al.~[12] benchmark (Electricity, INSECTS variants, NOAA Weather, Outdoor Objects, Ozone, Poker Hand, Powersupply, Rialto Bridge, Luxembourg, SineClusters, WaveformDrift2). Mean Time to Detection (MTD) and Missed Detection Rate (MDR) were computed on datasets with known drift points.
+\textbf{Experiment 2 (Real-World Benchmark):} 11 real-world datasets from the Lukats et al.~[12] benchmark (Electricity, INSECTS variants, NOAA Weather, Outdoor Objects, Powersupply, SineClusters, WaveformDrift2). Mean Time to Detection (MTD) and Missed Detection Rate (MDR) were computed on datasets with known drift points.
 
 \textbf{Experiment 3 (Explainability):} Three controlled scenarios with $d{=}10$ features: (a) univariate drift in F3, (b) subset drift in F2/F5/F7, (c) multivariate drift in all features. SHAP attribution accuracy was evaluated.
 
@@ -430,9 +430,9 @@ Table~\ref{tab:summary} summarizes the experimental findings.
 % ===== CONCLUSION =====
 \section{Conclusion}
 
-This paper presented EADD, a framework that extends adversarial validation with permutation testing and SHAP-based feature attribution for explainable drift detection. EADD addresses the critical explainability gap in existing unsupervised drift detectors by transforming binary drift alarms into diagnostic reports with feature-level attribution and actionable prescriptions.
+This paper presented EADD, a framework that extends discriminative classification with permutation testing and SHAP-based feature attribution for explainable drift detection. EADD addresses the critical explainability gap in existing unsupervised drift detectors by transforming binary drift alarms into diagnostic reports with feature-level attribution and actionable prescriptions.
 
-Experimental evaluation demonstrated that EADD: (1) detects all four temporal drift types while D3 detects only two, (2) achieves 0\% missed detection rate across 13 real-world datasets with 3.7\% faster mean detection time, (3) correctly identifies drifting features in all controlled scenarios via SHAP, and (4) produces zero false alarms including on autocorrelated streams where D3 fails.
+Experimental evaluation demonstrated that EADD: (1) detects all four temporal drift types while D3 detects only two, (2) achieves 0\% missed detection rate across 11 real-world datasets with 3.7\% faster mean detection time, (3) correctly identifies drifting features in all controlled scenarios via SHAP, and (4) produces zero false alarms including on autocorrelated streams where D3 fails.
 
 \subsection{Limitations and Future Work}
 

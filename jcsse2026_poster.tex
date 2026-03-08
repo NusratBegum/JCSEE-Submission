@@ -78,7 +78,7 @@
 \end{itemize}
 \vskip0.5cm
 {\color{MahidolBlue}\large\bfseries Research Question:}\\[6pt]
-\textit{Can adversarial validation be extended with permutation testing and feature attribution to provide statistically sound, explainable, and actionable drift detection across diverse drift types?}
+\textit{Can discriminative classification be extended with permutation testing and feature attribution to provide statistically sound, explainable, and actionable drift detection across diverse drift types?}
 \end{block}
 
 \vskip1cm
@@ -96,7 +96,7 @@
     lbl/.style={font=\large\bfseries, MahidolBlue}
   ]
   \node[box] (step1) {\textbf{Step 1: Data Windowing}\\Reservoir sampling $W_{ref}=500$\\Sliding window $W_{cur}=200$};
-  \node[box, below=of step1] (step2) {\textbf{Step 2: Adversarial Classifier}\\LightGBM distinguishes $W_{ref}$ vs $W_{cur}$\\AUC-ROC $>$ 0.7 $\Rightarrow$ suspect drift};
+  \node[box, below=of step1] (step2) {\textbf{Step 2: Discriminative Classifier}\\LightGBM distinguishes $W_{ref}$ vs $W_{cur}$\\AUC-ROC $>$ 0.7 $\Rightarrow$ suspect drift};
   \node[box, below=of step2] (step3) {\textbf{Step 3: Permutation Test}\\Shuffle labels $B=50$ times\\$p < 0.01 \Rightarrow$ confirm drift};
   \node[box, below=of step3] (step4) {\textbf{Step 4: Attribution \& Prescription}\\TreeSHAP feature ranking\\Classify: univariate / subset / multivariate\\Automated remediation action};
 
@@ -156,7 +156,7 @@ Recurring     & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5
 \vskip1cm
 
 % --- Experiment 2 ---
-\begin{block}{4. Experiment 2 — 13 Real-World Datasets}
+\begin{block}{4. Experiment 2 — 11 Real-World Datasets}
 \large
 \textbf{Objective:} Benchmark against D3 on diverse real-world streams.
 
@@ -177,7 +177,7 @@ Insects Reoccurring  & \textbf{131}  & 157   \\
 SineClusters         & \textbf{139}  & 229   \\
 WaveformDrift2       & \textbf{119}  & 169   \\
 \midrule
-\textbf{Avg.\ (13 datasets)} & \textbf{1{,}661} & 1{,}725 \\
+\textbf{Avg.\ (11 datasets)} & \textbf{1{,}661} & 1{,}725 \\
 \bottomrule
 \end{tabular}
 \end{table}
