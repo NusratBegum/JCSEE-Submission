@@ -232,6 +232,7 @@ As identified in Section~II, existing C2ST-based detectors lack early-warning si
 
 \begin{figure}[htbp]
     \centering
+    \resizebox{\columnwidth}{!}{%
     \begin{tikzpicture}[
         node distance=0.5cm,
         box/.style={rectangle, draw, rounded corners=2pt, minimum width=2.1cm, minimum height=0.55cm, align=center, font=\scriptsize},
@@ -262,13 +263,14 @@ As identified in Section~II, existing C2ST-based detectors lack early-warning si
     \draw[arrow] (dec2.south) -- ++(0,-0.3) -| node[near start, right, lbl] {No} (nodrift.south);
     \draw[arrow] (shap) -- (output);
     \end{tikzpicture}
+    }
     \caption{EADD pipeline overview. Shaded boxes indicate the four novel contributions beyond D3~[9]: Prediction Entropy ($H_{\text{pred}}$, Step~2), Adaptive Sequential Permutation Test (ASPT, Step~3), and SHAP interaction-aware attribution with Drift Severity Index (DSI, Step~4).}
     \label{fig:pipeline}
 \end{figure}
 
 \subsection{Step 1: Adaptive Reference Windowing}
 
-EADD maintains two data windows. The \textit{reference window} $W_{ref}$ ($N_{ref}$ samples) represents the baseline distribution and is maintained via \textit{reservoir sampling}~[22]: each new sample $x_t$ replaces a randomly chosen element in $W_{ref}$ with probability $N_{ref}/t$, ensuring that all past samples have equal probability of representation regardless of stream length. This is critical because a simple sliding reference window would only capture the most recent history, not the global pre-drift distribution. The \textit{current window} $W_{cur}$ ($N_{cur}$ samples) is a standard sliding window containing the most recent observations. Monitoring is triggered every $M$ samples to balance detection latency with computational cost. Upon confirmed drift, $W_{ref}$ is reset to the current data to establish a new baseline.
+EADD maintains two windows: a \textit{reference window} $W_{ref}$ ($N_{ref}$ samples) and a \textit{current window} $W_{cur}$ ($N_{cur}$ samples). The reference window is updated by \textit{reservoir sampling}~[22]: each new sample $x_t$ replaces a random element in $W_{ref}$ with probability $N_{ref}/t$, which keeps an unbiased sample of historical data over long streams. The current window is a standard sliding buffer of recent observations. Monitoring is triggered every $M$ samples to balance latency and cost; after confirmed drift, $W_{ref}$ is reset to the new regime.
 
 \subsection{Step 2: Discriminative Classification and Prediction Entropy}
 
@@ -372,9 +374,9 @@ Three experiments were designed to validate EADD's detection accuracy, feature a
 
 \textbf{Experiment 1 (Synthetic Data):} Synthetic streams ($n{=}10{,}000$, $d{=}5$) with controlled abrupt, gradual, incremental, and recurring drift injected at $t{=}5{,}000$. All eight detectors were compared. Five independent runs per drift type. Additionally, false alarm robustness was evaluated on four stable synthetic streams (Gaussian i.i.d., autocorrelated AR(1) with $\phi{=}0.8$, heteroscedastic, correlated with $\rho{=}0.7$) containing zero drift.
 
-\textbf{Experiment 2 (Real-World Benchmark):} 11 real-world datasets from the USP Data Stream Repository~[25] following the Lukats et al.~[10] evaluation protocol: datasets with known drift points are evaluated by Mean Time to Detection (MTD) and Missed Drift Rate (MDR); datasets without ground truth are evaluated by total number of detections (selectivity).
+\textbf{Experiment 2 (Real-World Benchmark):} 11 real-world datasets from the USP Data Stream Repository~[25] following the Lukats et al.~[10] evaluation protocol: datasets with known drift points are evaluated by Mean Time to Detection (MTD); datasets without ground truth are evaluated by total number of detections (selectivity).
 
-\textbf{Experiment 3 (Feature Attribution Accuracy):} Three controlled scenarios using synthetic data with $d{=}10$ features and drift injected at $t{=}5{,}000$: (a)~univariate drift in F3 only (mean shift $+2\sigma$), (b)~subset drift in F2/F5/F7, (c)~multivariate drift in all features. Precision@k (P@k) and Recall@k (R@k) measure whether the top-$k$ SHAP-ranked features exactly match the $k$ truly drifted features.
+\textbf{Experiment 3 (Drift-Causing Feature Identification):} Three controlled synthetic scenarios with $d{=}10$ features and drift injected at $t{=}5{,}000$: (a)~univariate drift in F3 only (mean shift $+2\sigma$), (b)~subset drift in F2/F5/F7, (c)~multivariate drift in all features. Precision@k (P@k) and Recall@k (R@k) measure whether the top-$k$ SHAP-ranked features exactly match the $k$ truly drifted features.
 
 \textbf{Configuration.} EADD: LightGBM~[23] (30 estimators, max depth 6, learning rate 0.1), $N_{ref}{=}500$, $N_{cur}{=}200$, monitoring frequency $M{=}50$, ASPT ($B_{\max}{=}50$, $B_{\min}{=}10$, $\alpha{=}0.01$, AUC threshold $\tau{=}0.7$). D3~[9]: logistic regression (liblinear solver), matching window sizes, fixed AUC threshold 0.7. All experiments: Python 3.10, LightGBM 4.1.0, SHAP~[24] 0.42.1, scikit-learn 1.3.2. Random seeds fixed for reproducibility.
 
@@ -412,29 +414,31 @@ EADD is the \textit{only} detector that achieved complete drift type coverage (4
 Table~\ref{tab:exp2} presents results on datasets with known drift points. EADD achieved the best MTD on WaveformDrift2 (99 vs D3's 179, a 44.7\% improvement) with zero false alarms. On 7 no-ground-truth datasets, EADD produced the fewest total detections (67) among functional detectors, indicating superior selectivity. IBDD produced 1{,}672 excess detections. BNDM timed out on all 33-feature datasets.
 
 \begin{table}[htbp]
-    \caption{Experiment 2: Real-World Benchmark (Datasets with Known Drift Points). MTD = Mean Time to Detection. MDR = Missed Drift Rate. $H_{\text{pred}}$ = mean prediction entropy at detection. ASPT = mean permutations used. ``---'' = missed all drifts or timed out.}
+    \caption{Experiment 2: Real-World Benchmark (Datasets with Known Drift Points). MTD = Mean Time to Detection. $H_{\text{pred}}$ = mean prediction entropy at detection. ASPT = mean permutations used. ``---'' = missed all drifts or timed out.}
     \label{tab:exp2}
     \centering
-    \begin{tabular}{|l|c|c|c|c|c|c|}
+    \setlength{\tabcolsep}{3pt}
+    \footnotesize
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{|l|c|c|c|c|}
         \hline
-        \textbf{Dataset} & \multicolumn{2}{c|}{\textbf{MTD}} & \multicolumn{2}{c|}{\textbf{MDR}} & $\boldsymbol{H_{\text{pred}}}$ & \textbf{ASPT} \\
-        \cline{2-5}
-         & \textbf{EADD} & \textbf{D3} & \textbf{EADD} & \textbf{D3} & & \textbf{Perms} \\
+        \textbf{Dataset} & \textbf{MTD (EADD)} & \textbf{MTD (D3)} & $\boldsymbol{H_{\text{pred}}}$ & \textbf{ASPT Perms} \\
         \hline
-        InsectsAbrupt & 173 & 153 & 0.0 & 0.0 & 0.21 & 11 \\
-        InsectsGradual & --- & --- & 1.0 & 1.0 & 0.62 & --- \\
-        SineClusters & 266 & 219 & 0.0 & 0.0 & 0.35 & 14 \\
-        WaveformDrift2 & \textbf{99} & 179 & 0.0 & 0.0 & 0.18 & 10 \\
+        InsectsAbrupt & 173 & 153 & 0.21 & 11 \\
+        InsectsGradual & --- & --- & 0.62 & --- \\
+        SineClusters & 266 & 219 & 0.35 & 14 \\
+        WaveformDrift2 & \textbf{99} & 179 & 0.18 & 10 \\
         \hline
     \end{tabular}
+    }
 \end{table}
 
-\subsection{Experiment 3: Feature Attribution Accuracy}
+\subsection{Experiment 3: Drift-Causing Feature Identification}
 
 Table~\ref{tab:exp3} presents the SHAP attribution accuracy using precision@k and recall@k metrics.
 
 \begin{table}[htbp]
-    \caption{Experiment 3: SHAP Feature Attribution Accuracy. All scenarios detected at step 5{,}149 (149 samples after drift onset).}
+    \caption{Experiment 3: Drift-Causing Feature Identification on controlled synthetic data ($n{=}10{,}000$, $d{=}10$). All scenarios detected at step 5{,}149 (149 samples after drift onset).}
     \label{tab:exp3}
     \centering
     \begin{tabular}{|l|c|c|c|c|c|}
@@ -452,30 +456,34 @@ EADD achieved \textit{perfect} attribution accuracy: P@k~=~R@k~=~F1@k~=~1.0 acro
 
 \subsection{Ablation Study}
 
-To validate the contribution of each component, we compare EADD against D3 and systematically remove individual EADD components on the Experiment~1 synthetic streams (Table~\ref{tab:ablation}).
+To validate the contribution of each component, we start from D3 and build toward EADD with incremental architectural variants on the Experiment~1 synthetic streams (Table~\ref{tab:ablation}).
 
 \begin{table}[htbp]
-    \caption{Ablation Study: Building from D3 Baseline. Each row removes one EADD component. Perms = mean permutations per test (``---'' = no permutation test).}
+    \caption{Ablation Study: D3-to-EADD progression. Perms = mean permutations per test (``---'' = no permutation test).}
     \label{tab:ablation}
     \centering
+    \setlength{\tabcolsep}{3pt}
+    \footnotesize
+    \resizebox{\columnwidth}{!}{%
     \begin{tabular}{|l|c|c|c|}
         \hline
         \textbf{Configuration} & \textbf{Types} & \textbf{Mean FA} & \textbf{Perms} \\
         \hline
         D3~[9] (LogReg, fixed $\tau$) & 2/4 & 0.00 & --- \\
         \hline
-        \multicolumn{4}{|l|}{\textit{Effect of removing EADD components:}} \\
+        \multicolumn{4}{|l|}{\textit{D3-based variants adding EADD components:}} \\
         \hline
-        $-$LightGBM ($\to$LogReg) & 2/4 & 0.00 & 12.8 \\
-        $-$Reservoir ($\to$sliding) & 3/4 & 1.50 & 13.1 \\
-        $-$ASPT ($\to$fixed $B_{\max}$) & 4/4 & 0.25 & 50.0 \\
+        + ASPT + Reservoir (LogReg) & 2/4 & 0.00 & 12.8 \\
+        + LightGBM + ASPT (Sliding ref.) & 3/4 & 1.50 & 13.1 \\
+        + LightGBM + Reservoir (Fixed Perm.) & 4/4 & 0.25 & 50.0 \\
         \hline
         \textbf{Full EADD} & \textbf{4/4} & \textbf{0.25} & \textbf{12.3} \\
         \hline
     \end{tabular}
+    }
 \end{table}
 
-Starting from D3's architecture, each EADD component addresses a specific limitation. Replacing D3's logistic regression with LightGBM is the most impactful change, improving coverage from 2/4 to 4/4 by capturing non-linear feature interactions in gradual and incremental drift. Reservoir sampling prevents reference window contamination by drifted data, recovering coverage from 3/4 to 4/4 and reducing false alarms. ASPT provides a $4\times$ computational reduction (50~$\to$~12.3 mean permutations) without affecting detection accuracy. Prediction entropy ($H_{\text{pred}}$) provides early-warning value for emerging drift that is not captured by binary detection metrics.
+Starting from D3's architecture, each EADD component addresses a specific limitation. LightGBM improves separability for non-linear drift patterns, reservoir sampling stabilises the baseline distribution under long streams, and ASPT reduces permutation cost from 50.0 to 12.3 on average without changing final detection outcomes. Together, these additions move from D3's 2/4 coverage to EADD's 4/4 coverage with low false alarms. Prediction entropy ($H_{\text{pred}}$) and SHAP+DSI provide diagnostic value (early warning, attribution, and prescriptions) beyond binary detection.
 
 % ===== CONCLUSION =====
 \section{Conclusion}
