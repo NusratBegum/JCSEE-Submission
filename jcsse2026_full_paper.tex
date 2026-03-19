@@ -201,7 +201,7 @@ These partial solutions leave a critical operational gap. In production, distrib
 This paper proposes \textbf{Explainable Adversarial Drift Detection (EADD)}, addressing this gap with four contributions:
 \begin{enumerate}
     \item \textbf{Prediction entropy monitoring} of the discriminative classifier, providing early-warning signals for emerging distributional instabilities before statistical significance is reached.
-    \item An \textbf{Adaptive Sequential Permutation Test (ASPT)}~[30] that reduces computational overhead by up to 70\% while maintaining Type~I error control.
+    \item An \textbf{Adaptive Sequential Permutation Test (ASPT)}~[30] that reduces computational overhead by up to 70\% while preserving permutation-test p-value semantics under adaptive stopping.
     \item \textbf{SHAP interaction-aware drift localisation}~[31] that identifies correlated feature drift invisible to marginal attribution.
     \item A \textbf{Drift Severity Index (DSI)} for continuous severity quantification and automated, proportional remediation prescriptions.
 \end{enumerate}
@@ -288,11 +288,11 @@ where $\hat{p}_i = f_\theta(x_i)$ is the predicted probability that sample $i$ b
 If AUC exceeds a threshold $\tau$, EADD applies an \textbf{adaptive sequential permutation test} inspired by Gandy~[30]. Instead of a fixed budget of $B$ permutations, ASPT monitors evidence accumulation and terminates early:
 \begin{enumerate}
     \item For each permutation $i = 1, \ldots, B_{\max}$: shuffle labels, retrain, compute $\text{AUC}^{(i)}_{\text{perm}}$. Update count $c_i = \#\{j \leq i : \text{AUC}^{(j)}_{\text{perm}} \geq \text{AUC}_{\text{actual}}\}$.
-    \item \textbf{Early reject $H_0$:} If $c_i = 0$ and $i \geq B_{\min}$ and $(1{-}\alpha)^i < 0.05$, terminate and confirm drift ($p = 0.001$).
+    \item \textbf{Early reject $H_0$:} If $c_i = 0$, $i \geq B_{\min}$, and $1/(i+1) < \alpha$, terminate and confirm drift with $p = 1/(i+1)$.
     \item \textbf{Early accept $H_0$:} If $c_i/i > 2\alpha$ and $i \geq B_{\min}$, terminate and declare no drift ($p = 1.0$).
     \item \textbf{Terminal:} If $B_{\max}$ is reached, $p = (c_{B_{\max}}{+}1)/(B_{\max}{+}1)$.
 \end{enumerate}
-Drift is confirmed if $p < \alpha$. Gandy~[30] proved that early stopping maintains Type~I error control when termination rules satisfy the bounded resampling risk condition, enabling substantial computational savings without sacrificing statistical validity.
+Drift is confirmed if $p < \alpha$. This preserves standard permutation-test interpretation under adaptive stopping by using either the terminal estimate or the conservative early-reject upper bound.
 
 \subsection{Step 4: Feature Attribution and Drift Severity Index}
 
@@ -378,7 +378,7 @@ Three experiments were designed to validate EADD's detection accuracy, feature a
 
 \textbf{Experiment 3 (Drift-Causing Feature Identification):} Three controlled synthetic scenarios with $d{=}10$ features and drift injected at $t{=}5{,}000$: (a)~univariate drift in F3 only (mean shift $+2\sigma$), (b)~subset drift in F2/F5/F7, (c)~multivariate drift in all features. Precision@k (P@k) and Recall@k (R@k) measure whether the top-$k$ SHAP-ranked features exactly match the $k$ truly drifted features.
 
-\textbf{Configuration.} EADD: LightGBM~[23] (30 estimators, max depth 6, learning rate 0.1), $N_{ref}{=}500$, $N_{cur}{=}200$, monitoring frequency $M{=}50$, ASPT ($B_{\max}{=}50$, $B_{\min}{=}10$, $\alpha{=}0.01$, AUC threshold $\tau{=}0.7$). D3~[9]: logistic regression (liblinear solver), matching window sizes, fixed AUC threshold 0.7. All experiments: Python 3.10, LightGBM 4.1.0, SHAP~[24] 0.42.1, scikit-learn 1.3.2. Random seeds fixed for reproducibility.
+\textbf{Configuration.} EADD: LightGBM~[23] (50 estimators, learning rate 0.1, 31 leaves), $N_{ref}{=}500$, $N_{cur}{=}200$, monitoring frequency $M{=}50$, ASPT ($B_{\max}{=}50$, $B_{\min}{=}10$, $\alpha{=}0.05$, AUC threshold $\tau{=}0.7$). D3~[9]: logistic regression (liblinear solver), matching window sizes, fixed AUC threshold 0.7. All experiments: Python 3.10, LightGBM 4.1.0, SHAP~[24] 0.42.1, scikit-learn 1.3.2. Random seeds fixed for reproducibility.
 
 % ===== RESULTS =====
 \subsection{Experiment 1: Synthetic Data}
@@ -407,7 +407,7 @@ Table~\ref{tab:exp1} presents drift type coverage and false alarm rates for all 
 
 EADD is the \textit{only} detector that achieved complete drift type coverage (4/4) with near-zero false alarms (mean 0.25 per type), yielding the best lift-per-drift ratio (1.06) among full-coverage detectors---i.e., nearly one detection per true drift point with minimal excess. Five detectors achieved 4/4 coverage, but with substantially higher false alarm costs: IBDD averaged 46.25, OCDD 17.5, CSDDM 5.5, and BNDM 4.75 false alarms per type. D3 and SPLL detected only 2/4 types, failing on gradual and incremental drift. UDetect failed on all four types.
 
-\textbf{False Alarm Robustness.} On four stable streams containing zero drift, EADD produced near-zero false alarms (3.2 total across all stream types; zero on Gaussian, autocorrelated, and correlated streams). D3 was particularly vulnerable to autocorrelated data (58.8 false alarms at $\tau{=}0.7$). The ASPT correctly identifies temporal autocorrelation as non-significant ($p > 0.01$). A Mann--Whitney U test confirmed that EADD produces significantly fewer false alarms than D3 ($p = 0.013$).
+\textbf{False Alarm Robustness.} On four stable streams containing zero drift, EADD produced near-zero false alarms (3.2 total across all stream types; zero on Gaussian, autocorrelated, and correlated streams). D3 was particularly vulnerable to autocorrelated data (58.8 false alarms at $\tau{=}0.7$). The ASPT correctly identifies temporal autocorrelation as non-significant ($p > 0.05$). A Mann--Whitney U test confirmed that EADD produces significantly fewer false alarms than D3 ($p = 0.013$).
 
 \subsection{Experiment 2: Real-World Benchmark}
 
