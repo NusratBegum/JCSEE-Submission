@@ -182,7 +182,7 @@
 ]
 
 % ===== ABSTRACT (~150 words) =====
-\noindent\textbf{\textit{Abstract}}\textemdash\textit{Machine learning models in production suffer from distribution drift, where evolving input features degrade model performance. Existing unsupervised detectors signal that drift occurred but provide no insight into which features drifted or what corrective action is appropriate. This paper proposes Explainable Adversarial Drift Detection (EADD), an uncertainty-aware framework that extends discriminative classification with permutation testing for statistical rigor and feature attribution for root cause analysis. We introduce the Prediction Uncertainty Index (PUI), which monitors classifier entropy to provide early-warning signals for subtle distributional shifts. Evaluation on synthetic and 11 real-world datasets demonstrated detection of all four temporal drift types with zero missed detections, zero false alarms ($p=0.013$), and correct feature identification in all controlled scenarios, advancing drift detection from binary alarms to actionable diagnostics.}
+\noindent\textbf{\textit{Abstract}}\textemdash\textit{Machine learning models in production suffer from distribution drift, where evolving input features degrade model performance. Existing unsupervised detectors signal that drift occurred but provide no insight into which features drifted or what corrective action is appropriate. This paper proposes Explainable Adversarial Drift Detection (EADD), an uncertainty-aware framework that extends discriminative classification with permutation testing for statistical rigor and feature attribution for root cause analysis. We introduce the Prediction Uncertainty Index (PUI), which monitors classifier entropy to provide early-warning signals for subtle distributional shifts. Evaluation on synthetic and 11 real-world datasets showed mixed detection sensitivity across benchmark configurations, while retaining strong robustness and interpretability: EADD produced zero false alarms on stable streams ($p=0.0101$ vs D3 at $\tau=0.6$) and correctly identified drifting features in all controlled explainability scenarios.}
 
 \vspace{6pt}
 
@@ -196,7 +196,7 @@
 
 Machine learning models deployed in production frequently encounter evolving data distributions that degrade performance~[1],~[2]. Detecting these changes early is critical, especially when ground-truth labels are delayed or unavailable. The Discriminative Drift Detector (D3)~[3] achieves state-of-the-art accuracy using discriminative classification~[4], but provides no insight into \textit{which} features drifted---a critical gap for practical MLOps deployment.
 
-This work proposes \textbf{Explainable Adversarial Drift Detection (EADD)}, which extends discriminative classification with: (1) permutation testing ($B{=}50$, $\alpha{=}0.01$) for statistically rigorous drift confirmation, (2) the Prediction Uncertainty Index (PUI) for early-warning shift detection, and (3) SHAP-based feature attribution identifying which features drive detected drift with automated remediation prescriptions.
+This work proposes \textbf{Explainable Adversarial Drift Detection (EADD)}, which extends discriminative classification with: (1) permutation testing ($B{=}50$, $\alpha{=}0.05$) for statistically rigorous drift confirmation, (2) the Prediction Uncertainty Index (PUI) for early-warning shift detection, and (3) SHAP-based feature attribution identifying which features drive detected drift with automated remediation prescriptions.
 
 % ===== METHODOLOGY =====
 \section{Methodology}
@@ -206,9 +206,9 @@ EADD operates as a four-step pipeline on streaming data. \textbf{Step 1:} Reserv
 % ===== RESULTS =====
 \section{Key Results}
 
-\textbf{Temporal Coverage:} EADD detected all four drift types (abrupt, gradual, incremental, recurring) with 100\% success rate across 5 runs each; D3 detected only 2/4, failing on gradual and incremental drift entirely.
+\textbf{Temporal Coverage:} In the focused temporal-pattern protocol, EADD detected all four drift types (abrupt, gradual, incremental, recurring) with 100\% success, while D3 detected only 2/4. In the multi-detector default benchmark, EADD became conservative and did not trigger, highlighting sensitivity to operating-point calibration.
 
-\textbf{Real-World Performance:} Across 11 benchmark datasets~[4], EADD achieved 0\% missed detection rate with 3.7\% lower mean time to detection than D3 (1,661 vs.\ 1,725 samples).
+\textbf{Real-World Performance:} Across 11 benchmark datasets~[4], the latest run showed EADD operating at a conservative point (0 detections), while D3 and other baselines remained active. This indicates that default EADD settings need recalibration for real-world sensitivity.
 
 \textbf{Explainability:} In three controlled scenarios, SHAP correctly identified drifting features as the top contributors in all cases (AUC 0.767--0.801). Feature attribution accuracy was 100\%.
 
@@ -217,7 +217,7 @@ EADD operates as a four-step pipeline on streaming data. \textbf{Step 1:} Reserv
 % ===== CONCLUSION =====
 \section{Conclusion}
 
-EADD transforms drift detection from a binary alarm into a diagnostic tool with feature-level attribution and actionable prescriptions. It detects a broader range of drift types than D3, achieves zero false alarms via permutation testing, and correctly identifies drifting features in all tested scenarios. The framework is directly applicable to production MLOps pipelines where understanding \textit{what} drifted is as important as knowing \textit{that} drift occurred.
+EADD transforms drift detection from a binary alarm into a diagnostic tool with feature-level attribution and actionable prescriptions. The current results show robust false-alarm suppression and strong explainability, while also indicating that detection sensitivity depends on calibration choices in broader benchmark settings. The framework is directly applicable to production MLOps pipelines where understanding \textit{what} drifted is as important as knowing \textit{that} drift occurred.
 
 % ===== REFERENCES =====
 \section*{References}

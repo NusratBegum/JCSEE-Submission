@@ -139,18 +139,18 @@ EADD is the \textbf{first unsupervised drift detector} that provides:
 \toprule
 \textbf{Drift Type} & \textbf{EADD} & \textbf{D3} \\
 \midrule
-Abrupt        & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5} \\
-Gradual       & \color{AccentGreen}\textbf{5/5} & \color{AccentRed}\textbf{0/5} \\
-Incremental   & \color{AccentGreen}\textbf{5/5} & \color{AccentRed}\textbf{0/5} \\
-Recurring     & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5} \\
+Abrupt        & \color{AccentRed}\textbf{0/5} & \color{AccentGreen}\textbf{5/5} \\
+Gradual       & \color{AccentRed}\textbf{0/5} & \color{AccentRed}\textbf{0/5} \\
+Incremental   & \color{AccentRed}\textbf{0/5} & \color{AccentRed}\textbf{0/5} \\
+Recurring     & \color{AccentRed}\textbf{0/5} & \color{AccentGreen}\textbf{5/5} \\
 \midrule
-\textbf{Overall} & \color{AccentGreen}\textbf{20/20} & \color{AccentRed}\textbf{10/20} \\
+\textbf{Overall} & \color{AccentRed}\textbf{0/20} & \color{AccentRed}\textbf{10/20} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \vskip0.3cm
-{\color{MahidolBlue}$\Rightarrow$} EADD: \textbf{100\%} detection rate \quad D3: \textbf{50\%} (fails on gradual \& incremental)
+{\color{MahidolBlue}$\Rightarrow$} Multi-detector default run: EADD conservative (no triggers); D3 detects abrupt/recurring only.
 \end{block}
 
 \vskip1cm
@@ -169,21 +169,21 @@ Recurring     & \color{AccentGreen}\textbf{5/5} & \color{AccentGreen}\textbf{5/5
 \textbf{Dataset} & \textbf{EADD} & \textbf{D3} \\
  & \textbf{MTD} & \textbf{MTD} \\
 \midrule
-Insects Abrupt       & 173   & 152.5 \\
-Insects Gradual      & 9{,}371 & 9{,}481 \\
-Insects Incr.\ Abrupt   & \textbf{31}    & 160   \\
-Insects Incr.\ Balanced & 102   & 104.5 \\
-Insects Reoccurring  & \textbf{131}  & 157   \\
-SineClusters         & \textbf{139}  & 229   \\
-WaveformDrift2       & \textbf{119}  & 169   \\
+Insects Abrupt       & ---   & 152.5 \\
+Insects Gradual      & --- & 9481 \\
+Insects Incr.\ Abrupt   & ---    & 160   \\
+Insects Incr.\ Balanced & ---   & --- \\
+Insects Reoccurring  & ---  & 157   \\
+SineClusters         & ---  & 229   \\
+WaveformDrift2       & ---  & 169   \\
 \midrule
-\textbf{Avg.\ (11 datasets)} & \textbf{1{,}661} & 1{,}725 \\
+\textbf{Known-drift summary} & \textbf{No triggers} & Active detections \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \vskip0.3cm
-{\color{MahidolBlue}$\Rightarrow$} \textbf{0\% missed detection rate} \quad MTD 3.7\% faster than D3
+{\color{MahidolBlue}$\Rightarrow$} Real-world benchmark indicates EADD requires calibration for sensitivity.
 \end{block}
 
 \vskip1cm
@@ -209,7 +209,7 @@ Multivariate  & 0.786 & $\leq$14.1\% each & \color{AccentGreen}\textbf{Yes} \\
 \end{table}
 
 \vskip0.3cm
-{\color{MahidolBlue}$\Rightarrow$} \textbf{100\% feature attribution accuracy} across all three drift patterns
+{\color{MahidolBlue}$\Rightarrow$} \textbf{100\% feature attribution accuracy} across all three controlled drift patterns
 \end{block}
 
 \end{column}
@@ -256,9 +256,9 @@ Mann--Whitney $p = 0.0101$ (statistically significant difference)
 \toprule
 \textbf{Metric} & \textbf{EADD} & \textbf{D3} \\
 \midrule
-Temporal coverage     & \textbf{4/4}  & 2/4 \\
-Real-world MDR        & \textbf{0\%}  & 7.7\% \\
-Avg.\ MTD (samples)   & \textbf{1{,}661} & 1{,}725 \\
+Temporal coverage     & \textbf{0/4}  & 2/4 \\
+Real-world activity   & Conservative  & Active \\
+Known-drift MTD       & --- & 152--9481 \\
 Feature attribution   & \textbf{3/3}  & --- \\
 False alarm total     & \textbf{0}    & 118.2 \\
 \bottomrule
@@ -272,8 +272,8 @@ False alarm total     & \textbf{0}    & 118.2 \\
 \begin{block}{7. Conclusions \& Future Work}
 \begin{itemize}
   \item EADD transforms drift detection from a \textbf{binary alarm} into an \textbf{actionable diagnostic tool} with feature-level attribution and remediation prescriptions.
-  \item \textbf{Strengths:} 100\% temporal coverage, zero false alarms, correct feature identification in all tested scenarios, competitive detection speed.
-  \item \textbf{Limitations:} Computational overhead of retraining LightGBM per monitoring cycle; prescription rules are currently heuristic.
+  \item \textbf{Strengths:} zero false alarms on stable streams, correct feature identification in all controlled scenarios, and statistically significant FA reduction vs D3 at $\tau=0.6$.
+  \item \textbf{Limitations:} Conservative operating point in multi-detector benchmarks reduced detection sensitivity; computational overhead remains higher than threshold-based detectors.
   \item \textbf{Future directions:}
   \begin{itemize}
     \item Online incremental discriminator updates
