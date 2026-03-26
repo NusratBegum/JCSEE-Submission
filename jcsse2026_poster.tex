@@ -1,6 +1,6 @@
 % =============================================================================
 % JCSSE 2026 Conference Poster — EADD
-% Explainable Adversarial Drift Detection for MLOps Feature Monitoring
+% Enhanced Adversarial Drift Detection for MLOps Feature Monitoring
 % Portrait A0 poster using beamerposter
 % =============================================================================
 \documentclass[final]{beamer}
@@ -35,7 +35,7 @@
   \begin{beamercolorbox}[wd=\paperwidth, ht=12cm]{headline}
     \begin{center}
       \vskip1cm
-      {\color{MahidolBlue}\VERYHuge\bfseries Explainable Adversarial Drift Detection\\[0.3em]
+      {\color{MahidolBlue}\VERYHuge\bfseries Enhanced Adversarial Drift Detection\\[0.3em]
        for MLOps Feature Monitoring}\\[1.0cm]
       {\color{black}\LARGE Nusrat Begum\textsuperscript{1} \qquad Thanapon Noraset\textsuperscript{1} \qquad Suppawong Tuarob\textsuperscript{1}}\\[0.4cm]
       {\color{MahidolBlue}\Large \textsuperscript{1}Faculty of Information and Communication Technology, Mahidol University, Thailand}\\[0.3cm]
@@ -74,11 +74,11 @@
 \begin{itemize}
   \item ML models in production suffer from \textbf{distribution drift}: input feature distributions shift over time, silently degrading predictions.
   \item Existing unsupervised detectors signal \textit{that} drift occurred but not \textit{which} features drifted or \textit{what} to do about it.
-  \item \textbf{Gap:} No unsupervised detector simultaneously provides statistical rigor, feature-level explainability, and automated remediation.
+  \item \textbf{Gap:} No unsupervised detector simultaneously provides statistical rigor, feature-level attribution, and drift severity quantification.
 \end{itemize}
 \vskip0.5cm
 {\color{MahidolBlue}\large\bfseries Research Question:}\\[6pt]
-\textit{Can discriminative classification be extended with permutation testing and feature attribution to provide statistically sound, explainable, and actionable drift detection across diverse drift types?}
+\textit{Can discriminative classification be extended with permutation testing and SHAP attribution to provide statistically rigorous, feature-attributed drift detection across diverse drift types?}
 \end{block}
 
 \vskip1cm
@@ -113,11 +113,11 @@
 % --- Key Innovation ---
 \begin{exampleblock}{Key Innovation}
 \large
-EADD is the \textbf{first unsupervised drift detector} that provides:
+EADD (\textbf{Enhanced Adversarial Drift Detection}) extends D3 with three contributions:
 \begin{enumerate}
-  \item \textbf{Statistical rigor} via permutation testing (zero false alarms)
-  \item \textbf{Feature-level explainability} via SHAP attribution
-  \item \textbf{Actionable prescriptions} mapping drift patterns to MLOps fixes
+  \item \textbf{Adaptive Sequential Permutation Test (ASPT)} + prediction entropy monitoring ($H_{\text{pred}}$) for statistically rigorous confirmation
+  \item \textbf{SHAP interaction-aware attribution} + \textbf{Drift Severity Index (DSI)} identifying which features caused drift and how severe
+  \item \textbf{Intensive experimental validation} against 7 state-of-the-art detectors
 \end{enumerate}
 \end{exampleblock}
 
@@ -189,7 +189,7 @@ WaveformDrift2       & ---  & 169   \\
 \vskip1cm
 
 % --- Experiment 3 ---
-\begin{block}{5. Experiment 3 — Explainability}
+\begin{block}{5. Experiment 3 — SHAP Attribution Accuracy}
 \large
 \textbf{Objective:} Does SHAP correctly identify which features drifted?
 
@@ -271,7 +271,7 @@ False alarm total     & \textbf{0}    & 118.2 \\
 % --- Conclusion ---
 \begin{block}{7. Conclusions \& Future Work}
 \begin{itemize}
-  \item EADD transforms drift detection from a \textbf{binary alarm} into an \textbf{actionable diagnostic tool} with feature-level attribution and remediation prescriptions.
+  \item EADD transforms drift detection from a \textbf{binary alarm} into an \textbf{actionable diagnostic tool} with feature-level attribution and drift severity quantification.
   \item \textbf{Strengths:} zero false alarms on stable streams, correct feature identification in all controlled scenarios, and statistically significant FA reduction vs D3 at $\tau=0.6$.
   \item \textbf{Limitations:} Conservative operating point in multi-detector benchmarks reduced detection sensitivity; computational overhead remains higher than threshold-based detectors.
   \item \textbf{Future directions:}
