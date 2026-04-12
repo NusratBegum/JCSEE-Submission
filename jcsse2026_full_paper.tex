@@ -102,9 +102,9 @@ As identified in Section~II, existing C2ST-based detectors lack continuous uncer
     \centering
     \begin{tikzpicture}[
         font=\footnotesize,
-        node distance=0.34cm,
+        node distance=0.4cm,
         proc/.style={rectangle, draw=black!70, fill=black!4,
-                     rounded corners=2pt, minimum width=6.4cm,
+                     rounded corners=2pt, minimum width=6.7cm,
                      align=center, inner xsep=6pt, inner ysep=4pt},
         term/.style={rectangle, draw=black!65, fill=black!2,
                      rounded corners=2pt, align=center,
@@ -113,71 +113,67 @@ As identified in Section~II, existing C2ST-based detectors lack continuous uncer
                     aspect=2.3, align=center, inner sep=1.5pt},
         arr/.style={-{Latex[length=2.0mm,width=1.3mm]}, semithick, black!80, line cap=round, line join=round},
         darr/.style={-{Latex[length=2.0mm,width=1.3mm]}, semithick, black!55, dashed, line cap=round, line join=round},
-        lbl/.style={font=\scriptsize, fill=white, inner sep=1pt, text=black!75},
-        zone/.style={rectangle, draw=black!45, thin, rounded corners=4pt, inner sep=6pt},
-        ztitle/.style={font=\footnotesize\bfseries, fill=white, inner sep=1pt},
+        lbl/.style={font=\footnotesize, fill=white, inner sep=1pt, text=black!75},
+        head/.style={font=\footnotesize\bfseries},
     ]
 
-    \node[term, minimum width=2.35cm, minimum height=2.35cm] (input) at (0,-2.35) {%
-        \textbf{Data Stream}\\[5pt]
-        $\{x_t\}_{t=1}^{T}$, $x_t \in \mathbb{R}^d$};
-
-    \node[proc] (s1) at (5.2,-0.35) {%
+    \node[proc] (s1) at (0,-0.35) {%
         \textbf{Step 1.}\enspace Adaptive Reference Windowing\\[1pt]
-        {\scriptsize $W_\mathrm{ref}$ via reservoir sampling; sliding $W_\mathrm{cur}$ of size $N_\mathrm{cur}$}};
+        $W_\mathrm{ref}$ via reservoir sampling; sliding $W_\mathrm{cur}$ of size $N_\mathrm{cur}$};
 
     \node[proc, below=of s1] (s2) {%
         \textbf{Step 2.}\enspace Discriminative Classification (C2ST)\\[1pt]
-        {\scriptsize LightGBM on $W_\mathrm{ref} \cup W_\mathrm{cur}$; 5-fold AUC; prediction entropy $H_\mathrm{pred}$}};
+        LightGBM on $W_\mathrm{ref} \cup W_\mathrm{cur}$; 5-fold AUC; prediction entropy $H_\mathrm{pred}$};
 
     \node[dec, below=of s2] (dec1) {$\mathrm{AUC} > \tau$?};
 
     \node[proc, below=of dec1] (s3) {%
         \textbf{Step 3.}\enspace Statistical Significance Testing (ASPT)\\[1pt]
-        {\scriptsize Adaptive sequential permutation test with early stopping; estimate $p$-value}};
+        Adaptive sequential permutation test with early stopping; estimate $p$-value};
 
     \node[dec, below=of s3] (dec2) {$p < \alpha$?};
 
     \node[proc, below=of dec2] (s4) {%
         \textbf{Step 4.}\enspace Feature Attribution and Severity Quantification\\[1pt]
-        {\scriptsize TreeSHAP feature ranking; $\mathrm{DSI} = \mathrm{AUC}\,(1-H_\mathrm{norm})$}};
+        TreeSHAP feature ranking; $\mathrm{DSI} = \mathrm{AUC}\,(1-H_\mathrm{norm})$};
 
-    \node[term, minimum width=2.6cm, anchor=west] (nodrift) at ([xshift=2.45cm]dec1.center) {%
+    \node[term, minimum width=2.35cm, minimum height=2.35cm] (input) at ([xshift=-6.8cm]dec1.center) {%
+        \textbf{Data Stream}\\[5pt]
+        $\{x_t\}_{t=1}^{T}$, $x_t \in \mathbb{R}^d$};
+
+    \node[term, minimum width=2.6cm] (nodrift) at ([xshift=6.7cm]dec1.center) {%
         \textbf{No Drift}\\[2pt]
-        {\scriptsize Resume monitoring}};
+        Resume monitoring};
 
-    \node[term, minimum width=3.7cm, minimum height=3.55cm, align=left, anchor=west] (output) at ([xshift=1.75cm]s4.east) {%
+    \node[term, minimum width=3.7cm, minimum height=3.55cm, align=left] (output) at ([xshift=6.7cm,yshift=-2.55cm]dec1.center) {%
         \textbf{Drift Alert}\\[6pt]
-        {\scriptsize $H_\mathrm{pred}$\enspace (uncertainty monitor)}\\[2pt]
-        {\scriptsize $p$-value\enspace (significance)}\\[2pt]
-        {\scriptsize SHAP rankings\enspace (attribution)}\\[2pt]
-        {\scriptsize DSI score\enspace (severity)}\\[2pt]
-        {\scriptsize Prescription tier}};
+        $H_\mathrm{pred}$\enspace (uncertainty monitor)\\[2pt]
+        $p$-value\enspace (significance)\\[2pt]
+        SHAP rankings\enspace (attribution)\\[2pt]
+        DSI score\enspace (severity)\\[2pt]
+        Prescription tier};
 
-    \begin{scope}[on background layer]
-        \node[zone, fit=(input),
-              label={[ztitle]above:Input}] {};
-        \node[zone, fit=(s1)(s2)(dec1)(s3)(dec2)(s4),
-              label={[ztitle]above:EADD Detection Pipeline}] {};
-        \node[zone, fit=(nodrift)(output),
-              label={[ztitle]above:Output}] {};
-    \end{scope}
+    \node[head] at ([yshift=8pt]input.north) {Input};
+    \node[head] at ([yshift=8pt]s1.north) {EADD Detection Pipeline};
+    \node[head] at ([yshift=8pt]s1.north -| output.center) {Output};
 
-    \coordinate (inlane) at ($(input.east)+(0.75,0)$);
+    \path (input.east) ++(0.95,0) coordinate (inlane);
+    \path (s4.east) ++(1.20,0) coordinate (rightlane);
+
     \draw[arr] (input.east) -- (inlane) |- ([yshift=3pt]s1.west);
-    
+
     \draw[arr] (s1) -- (s2);
     \draw[arr] (s2) -- (dec1);
     \draw[arr] (dec1.south) -- node[lbl, right=2pt] {Yes} (s3.north);
     \draw[arr] (s3)  -- (dec2);
     \draw[arr] (dec2.south) -- node[lbl, right=2pt] {Yes} (s4.north);
-    
+
     \draw[arr] (dec1.east) -- node[lbl, above=1pt] {No} (nodrift.west);
-    \draw[arr] (dec2.east) -- node[lbl, above=1pt] {No} ([xshift=2.35cm]dec2.center) |- (nodrift.south);
-    
+    \draw[arr] (dec2.east) -- node[lbl, above=1pt] {No} (dec2.east -| rightlane) |- (nodrift.south);
+
     \draw[arr] (s4.east) -- (output.west);
-    
-    \draw[darr] (s2.east) -- ([xshift=2.35cm]s2.center) |- ([yshift=12pt]output.west);
+
+    \draw[darr] (s2.east) -- (s2.east -| rightlane) |- ([yshift=10pt]output.west);
 
     \end{tikzpicture}
     \caption{EADD detection pipeline. $W_\mathrm{cur}$ is compared against $W_\mathrm{ref}$ via a discriminative classifier; $H_\mathrm{pred}$ provides a continuous uncertainty monitoring signal (dashed). AUC $> \tau$ triggers ASPT for statistical confirmation (Step~3); upon significance, TreeSHAP and DSI localise and quantify the shift (Step~4).}
