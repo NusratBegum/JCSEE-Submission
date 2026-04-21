@@ -59,11 +59,11 @@ concept drift, discriminative classification, feature attribution, distribution 
 
 \section{Introduction}
 
-Machine learning models deployed in production environments encounter evolving data distributions---collectively termed distribution drift---that can degrade model performance if left undetected~\cite{b1,b2}. Drift may manifest as changes in input features (covariate drift) or in the input--output relationship (concept drift); detecting such changes early is essential for maintaining reliable inference~\cite{b3,b4}.
+Machine learning models deployed in production environments encounter evolving data distributions, collectively termed distribution drift, that can degrade model performance if left undetected~\cite{b1,b2}. Drift may manifest as changes in input features (covariate drift) or in the input--output relationship (concept drift); detecting such changes early is essential for maintaining reliable inference~\cite{b3,b4}.
 
 The drift detection landscape spans three paradigms. \textit{Supervised methods} such as DDM~\cite{b8} monitor error rates but require timely ground-truth labels. \textit{Statistical methods} employ hypothesis tests such as the Kolmogorov--Smirnov test~\cite{b6,b7} but operate per feature, missing multivariate shifts. \textit{Discriminative methods} such as D3~\cite{b9} train classifiers to distinguish reference from current data, achieving state-of-the-art robustness in the comprehensive benchmark by Lukats et al.~\cite{b10}. However, all existing methods share a common limitation: they report only \textit{whether} drift occurred, not \textit{which} features drifted or \textit{how severe} the shift is.
 
-D3~\cite{b9}, the most robust unsupervised detector in the Lukats et al.\ benchmark~\cite{b10}, exemplifies this limitation with two critical gaps. First, D3 applies no formal significance test---it relies on a fixed AUC threshold without statistical justification, making it vulnerable to false alarms on autocorrelated data. Second, D3 follows a ``detect-and-discard'' pattern: the trained classifier is discarded after computing AUC, providing no information about which features drove the shift. Recent work has partially addressed related gaps: TRIPODD~\cite{b28} enables feature-interaction hypothesis testing but requires pre-specifying interactions and has quadratic complexity; HDPD~\cite{b29} provides per-feature performance attributions but requires labels and operates post-hoc on collected batches.
+D3~\cite{b9}, among the most robust unsupervised detectors in the Lukats et al.\ benchmark~\cite{b10}, exemplifies this limitation with two critical gaps. First, D3 applies no formal significance test, relying instead on a fixed AUC threshold without statistical justification, which makes it vulnerable to false alarms on autocorrelated data. Second, D3 follows a ``detect-and-discard'' pattern: the trained classifier is discarded after computing AUC, providing no information about which features drove the shift. Recent work has partially addressed related gaps: TRIPODD~\cite{b28} enables feature-interaction hypothesis testing but requires pre-specifying interactions and has quadratic complexity; HDPD~\cite{b29} provides per-feature performance attributions but requires labels and operates post-hoc on collected batches.
 
 In the \textit{academic research} literature on unsupervised streaming detectors, no single framework integrates (1)~statistically rigorous multivariate detection, (2)~identification of \textit{which} features caused the shift, and (3)~quantification of \textit{how severe} the drift is. Commercial monitoring platforms (e.g., Vertex AI~\cite{b20}, SageMaker Clarify~\cite{b21}) address aspects of this in production but operate in supervised or batch settings and are not designed for real-time streaming. Nor has any prior work systematically evaluated the accuracy of SHAP-based feature attribution within discriminative streaming drift detection.
 
@@ -86,7 +86,7 @@ Drift detection methods can be classified along two axes: label availability and
 
 \textit{Unsupervised methods} operate without labels by directly monitoring data distributions. Statistical approaches include ADWIN~\cite{b12}, which dynamically adjusts sliding window sizes and can detect gradual drift, and KSWIN~\cite{b7}, which applies the Kolmogorov--Smirnov two-sample test over sliding windows for abrupt or sudden shifts. While statistically principled, these methods test each feature \textit{independently} (univariate), making them blind to multivariate distributional shifts and causing multiple testing problems in high-dimensional settings~\cite{b6}.
 
-\textit{Discriminative approaches} frame drift detection as binary classification: an auxiliary classifier is trained to distinguish reference from current distributions~\cite{b9,b13,b14,b19}. This naturally captures multivariate drift in a single test. The most prominent discriminative detector, \textbf{D3}~\cite{b9}, trains a logistic regression classifier on reference vs.\ current windows and triggers drift when AUC exceeds a fixed threshold. Lukats et al.~\cite{b10} identified D3 as the most robust unsupervised detector across 29 real-world datasets. However, D3 has three weaknesses: (1)~its linear discriminator misses non-linear feature interactions, causing failure on gradual and incremental drift; (2)~it applies no formal significance test, relying on a fixed AUC threshold vulnerable to false alarms on autocorrelated data; and (3)~it discards the trained classifier after computing AUC, providing no feature-level attribution. Other benchmarked detectors exhibit characteristic limitations: CSDDM~\cite{b15} and IBDD~\cite{b16} achieve broad coverage but with elevated false alarm rates; OCDD~\cite{b17} and SPLL~\cite{b18} are effective for specific drift types but miss others; BNDM struggles with high-dimensional data; and UDetect failed on 45\% of scenarios~\cite{b10}.
+\textit{Discriminative approaches} frame drift detection as binary classification: an auxiliary classifier is trained to distinguish reference from current distributions~\cite{b9,b13,b14,b19}. This naturally captures multivariate drift in a single test. The most prominent discriminative detector, \textbf{D3}~\cite{b9}, trains a logistic regression classifier on reference vs.\ current windows and triggers drift when AUC exceeds a fixed threshold. Lukats et al.~\cite{b10} identified D3 as among the most robust unsupervised detectors across 29 real-world data streams. However, D3 has three weaknesses: (1)~its linear discriminator misses non-linear feature interactions, causing failure on gradual and incremental drift; (2)~it applies no formal significance test, relying on a fixed AUC threshold vulnerable to false alarms on autocorrelated data; and (3)~it discards the trained classifier after computing AUC, providing no feature-level attribution. Other benchmarked detectors exhibit characteristic limitations: CSDDM~\cite{b15} and IBDD~\cite{b16} achieve broad coverage but with elevated false alarm rates; OCDD~\cite{b17} and SPLL~\cite{b18} are effective for specific drift types but miss others; BNDM struggles with high-dimensional data; and UDetect failed on 45\% of scenarios~\cite{b10}.
 
 \subsection{Feature Attribution in Discriminative Detection}
 
@@ -96,7 +96,7 @@ Recent academic work has advanced individual aspects: TRIPODD~\cite{b28} enables
 
 \section{Proposed Methodology}
 
-As identified in Section~II, existing C2ST-based detectors lack continuous uncertainty monitoring, statistical significance testing, feature-level attribution, and severity quantification. EADD is a streaming pipeline for feature drift ($P(X)$ shift) detection that extends the C2ST framework~\cite{b19} with three novel components to address these gaps (Fig.~\ref{fig:pipeline}).
+As identified in Section~II, existing C2ST-based detectors lack continuous uncertainty monitoring, statistical significance testing, feature-level attribution, and severity quantification. EADD is a streaming pipeline for feature drift ($P(X)$ shift) detection that extends the C2ST framework~\cite{b19} with three novel components to address these gaps (Fig.~\ref{fig:pipeline}). The complete detection cycle is specified in Algorithm~\ref{alg:eadd}, which is referenced throughout this section; the four subsections that follow expand each step in turn.
 
 \begin{figure*}[t]
     \centering
@@ -180,52 +180,6 @@ As identified in Section~II, existing C2ST-based detectors lack continuous uncer
     \label{fig:pipeline}
 \end{figure*}
 
-\subsection{Step 1: Adaptive Reference Windowing}
-
-EADD maintains two windows: a \textit{reference window} $W_{ref}$ ($N_{ref}$ samples) and a \textit{current window} $W_{cur}$ ($N_{cur}$ samples). The reference window is updated by \textit{reservoir sampling}~\cite{b22}: each new sample $x_t$ replaces a random element in $W_{ref}$ with probability $N_{ref}/t$, which keeps an unbiased sample of historical data over long streams. The current window is a standard sliding buffer of recent observations. Monitoring is triggered every $M$ samples to balance latency and cost; after confirmed drift, $W_{ref}$ is reset to the new regime.
-
-\subsection{Step 2: Discriminative Classification and Prediction Entropy}
-
-Following the C2ST framework~\cite{b19}, EADD constructs a binary classification task: samples from $W_{ref}$ are labelled 0 (reference) and samples from $W_{cur}$ are labelled 1 (current). A LightGBM gradient boosting classifier~\cite{b23} is trained on this combined dataset via stratified 5-fold cross-validation, and the out-of-fold AUC-ROC is computed. AUC~$\approx$~0.5 indicates the classifier cannot distinguish the two windows (no drift); AUC~$\gg$~0.5 indicates the distributions are separable (drift suspected). We use LightGBM rather than D3's logistic regression~\cite{b9} because gradient boosting captures non-linear feature interactions, providing a more powerful discriminator for the non-linear and incremental drift types that defeat D3's linear classifier.
-
-\textbf{Prediction Entropy.} Beyond the aggregate AUC score, EADD extracts additional diagnostic information from the classifier's per-sample predictions. We compute the mean binary Shannon entropy of the discriminative classifier's predicted probabilities:
-\begin{equation}
-H_{\text{pred}} = \frac{-1}{n}\sum_{i=1}^{n}\left[\hat{p}_i\ln\hat{p}_i + (1{-}\hat{p}_i)\ln(1{-}\hat{p}_i)\right]
-\label{eq:hpred}
-\end{equation}
-where $\hat{p}_i = f_\theta(x_i)$ is the probability that sample $i$ belongs to $W_{cur}$: $H_{\text{pred}} \approx \ln 2 \approx 0.693$ indicates maximum uncertainty (no drift); $H_{\text{pred}} \rightarrow 0$ indicates high classifier confidence (drift likely). Note: $H_{\text{pred}}$ uses natural log; its maximum is $\ln 2$, not~1. $H_{\text{pred}}$ remains informative at every monitoring step---including steps where AUC $< \tau$ and no detection gate is triggered---providing a continuous sub-threshold trend signal; its standalone predictive value is qualitative in the present work.
-
-\subsection{Step 3: Adaptive Sequential Permutation Test (ASPT)}
-
-If AUC exceeds a threshold $\tau$, EADD applies an \textbf{adaptive sequential permutation test} inspired by Gandy~\cite{b30}. Instead of a fixed budget of $B$ permutations, ASPT monitors evidence accumulation and terminates early:
-\begin{enumerate}
-    \item For each permutation $i = 1, \ldots, B_{\max}$: shuffle labels, retrain, compute $\text{AUC}^{(i)}_{\text{perm}}$. Update count $c_i = \#\{j \leq i : \text{AUC}^{(j)}_{\text{perm}} \geq \text{AUC}_{\text{actual}}\}$.
-    \item \textbf{Early reject $H_0$:} If $c_i = 0$, $i \geq B_{\min}$, and $1/(i+1) < \alpha$, terminate and confirm drift with $p = 1/(i+1)$.
-    \item \textbf{Early accept $H_0$:} If $c_i/i > 2\alpha$ and $i \geq B_{\min}$, terminate and declare no drift with $p = (c_i+1)/(i+1)$.
-    \item \textbf{Terminal:} If $B_{\max}$ is reached, $p = (c_{B_{\max}}{+}1)/(B_{\max}{+}1)$.
-\end{enumerate}
-Drift is confirmed if $p < \alpha$. The two-stage gate is conservative: overall Type~I error $\leq \Pr(\text{AUC}{>}\tau \mid H_0) \times \alpha \leq \alpha$. Under $\alpha = 0.05$, early rejection requires $i \geq 20$ (since $1/21 \approx 0.048 < 0.05$); all confirmed detections in Experiments~1 and~3 terminated at exactly $i = 20$ (verified from logged \texttt{last\_aspt\_permutations}). Stable streams terminate at $i = B_{\min} = 10$, yielding 90--95\% savings vs.\ fixed-budget $B_{\max} = 199$.
-
-\subsection{Step 4: Feature Attribution and Drift Severity Index}
-
-Upon drift confirmation, EADD exploits the trained discriminative classifier---which D3~\cite{b9} would discard---to diagnose \textit{which} features drive the detected drift using SHAP (SHapley Additive exPlanations)~\cite{b24}.
-
-\textbf{Feature Attribution.} EADD applies TreeSHAP~\cite{b24} to the trained LightGBM discriminator. Per-feature importances $\bar{\phi}_j = \frac{1}{n}\sum_{i=1}^{n}|\phi_j^{(i)}|$ are normalised into a contribution vector $\mathbf{s} = (s_1, \ldots, s_d)$, $s_j = \bar{\phi}_j / \sum_k \bar{\phi}_k$, identifying which features drive the shift and feeding the DSI below. SHAP interaction values~\cite{b31} ($\Phi \in \mathbb{R}^{d \times d}$) are computed as a supplementary diagnostic but are not evaluated in the present experiments; validation on correlated-drift scenarios is left to future work.
-
-\textbf{Drift Severity Index (DSI).} The normalised contribution vector $\mathbf{s}$ computed from TreeSHAP directly feeds the DSI: a composite severity metric combining detection confidence with attribution concentration:
-\begin{equation}
-\text{DSI} = \text{AUC} \times \left(1 - H_{\text{norm}}(\mathbf{s})\right)
-\label{eq:dsi}
-\end{equation}
-where $H_{\text{norm}}(\mathbf{s}) = -\sum_{j=1}^{d} s_j \log_2 s_j \,/\, \log_2 d$ is the normalised Shannon entropy~\cite{b34}. The $\log_2 d$ denominator ensures $H_{\text{norm}} \in [0, 1]$ regardless of dimensionality. DSI-based prescriptions map severity to recommended action. The tier boundaries below are proposed heuristics requiring domain-specific calibration; they are not empirically validated in the present work (all experiment DSI values fall in the Low tier):
-\begin{itemize}
-    \item \textbf{Critical (DSI $> 0.6$):} Concentrated drift $\rightarrow$ audit specific data pipeline.
-    \item \textbf{Moderate ($0.3$--$0.6$):} Subset drift $\rightarrow$ investigate shared data source.
-    \item \textbf{Low ($< 0.3$):} Diffuse shift $\rightarrow$ schedule full model retraining.
-\end{itemize}
-
-\subsection{Algorithm Summary}
-
 \begin{algorithm}[htbp]
 \caption{EADD Detection Cycle}
 \label{alg:eadd}
@@ -239,7 +193,7 @@ where $H_{\text{norm}}(\mathbf{s}) = -\sum_{j=1}^{d} s_j \log_2 s_j \,/\, \log_2
 \IF{AUC $> \tau$}
     \STATE $p \gets$ ASPT($W_{ref}$, $W_{cur}$, AUC) \COMMENT{Adaptive early stopping}
     \IF{$p < \alpha$}
-        \STATE Compute SHAP values via TreeSHAP; interaction matrix computed as diagnostic output (not evaluated here)
+        \STATE Compute SHAP values via TreeSHAP
         \STATE Compute DSI via Eq.~(\ref{eq:dsi})
         \STATE Generate DSI-based prescription
         \RETURN \textsc{Drift}, $H_{\text{pred}}$, DSI, SHAP ranking, prescription
@@ -248,6 +202,50 @@ where $H_{\text{norm}}(\mathbf{s}) = -\sum_{j=1}^{d} s_j \log_2 s_j \,/\, \log_2
 \RETURN \textsc{No-Drift}, $H_{\text{pred}}$
 \end{algorithmic}
 \end{algorithm}
+
+\subsection{Step 1: Adaptive Reference Windowing}
+
+EADD maintains two windows: a \textit{reference window} $W_{ref}$ ($N_{ref}$ samples) and a \textit{current window} $W_{cur}$ ($N_{cur}$ samples). The reference window is updated by \textit{reservoir sampling}~\cite{b22}: each new sample $x_t$ replaces a random element in $W_{ref}$ with probability $N_{ref}/t$, which keeps an unbiased sample of historical data over long streams. The current window is a standard sliding buffer of recent observations. Monitoring is triggered every $M$ samples to balance latency and cost; after confirmed drift, $W_{ref}$ is reset to the new regime.
+
+\subsection{Step 2: Discriminative Classification and Prediction Entropy}
+
+Following the C2ST framework~\cite{b19}, EADD constructs a binary classification task: samples from $W_{ref}$ are labelled 0 (reference) and samples from $W_{cur}$ are labelled 1 (current). A LightGBM gradient boosting classifier~\cite{b23} is trained on this combined dataset via stratified 5-fold cross-validation, and the out-of-fold AUC-ROC is computed. AUC~$\approx$~0.5 indicates the classifier cannot distinguish the two windows (no drift); AUC~$\gg$~0.5 indicates the distributions are separable (drift suspected). We use LightGBM rather than D3's logistic regression~\cite{b9} because gradient boosting captures non-linear feature interactions, providing a more powerful discriminator for the non-linear and incremental drift types that defeat D3's linear classifier.
+
+\textbf{Prediction Entropy.} Beyond the aggregate AUC score, EADD extracts additional diagnostic information from the classifier's per-sample predictions. We compute the mean binary Shannon entropy of the discriminative classifier's predicted probabilities:
+\begin{equation}
+H_{\text{pred}} = \frac{-1}{n}\sum_{i=1}^{n}\left[\hat{p}_i\ln\hat{p}_i + (1{-}\hat{p}_i)\ln(1{-}\hat{p}_i)\right]
+\label{eq:hpred}
+\end{equation}
+where $\hat{p}_i = f_\theta(x_i)$ is the probability that sample $i$ belongs to $W_{cur}$: $H_{\text{pred}} \approx \ln 2 \approx 0.693$ indicates maximum uncertainty (no drift); $H_{\text{pred}} \rightarrow 0$ indicates high classifier confidence (drift likely). Note: $H_{\text{pred}}$ uses natural log; its maximum is $\ln 2$, not~1. $H_{\text{pred}}$ remains informative at every monitoring step, including steps where AUC $< \tau$ and no detection gate is triggered, providing a continuous sub-threshold trend signal; its standalone predictive value is qualitative in the present work.
+
+\subsection{Step 3: Adaptive Sequential Permutation Test (ASPT)}
+
+If AUC exceeds a threshold $\tau$, EADD applies an \textbf{adaptive sequential permutation test} inspired by Gandy~\cite{b30}. Instead of a fixed budget of $B$ permutations, ASPT monitors evidence accumulation and terminates early:
+\begin{enumerate}
+    \item For each permutation $i = 1, \ldots, B_{\max}$: shuffle labels, retrain, compute $\text{AUC}^{(i)}_{\text{perm}}$. Update count $c_i = \#\{j \leq i : \text{AUC}^{(j)}_{\text{perm}} \geq \text{AUC}_{\text{actual}}\}$.
+    \item \textbf{Early reject $H_0$:} If $c_i = 0$, $i \geq B_{\min}$, and $1/(i+1) < \alpha$, terminate and confirm drift with $p = 1/(i+1)$.
+    \item \textbf{Early accept $H_0$:} If $c_i/i > 2\alpha$ and $i \geq B_{\min}$, terminate and declare no drift with $p = (c_i+1)/(i+1)$.
+    \item \textbf{Terminal:} If $B_{\max}$ is reached, $p = (c_{B_{\max}}{+}1)/(B_{\max}{+}1)$.
+\end{enumerate}
+Drift is confirmed if $p < \alpha$. The two-stage gate is conservative: overall Type~I error $\leq \Pr(\text{AUC}{>}\tau \mid H_0) \times \alpha \leq \alpha$. Under $\alpha = 0.05$, early rejection requires $i \geq 20$ (since $1/21 \approx 0.048 < 0.05$); all confirmed detections in Experiments~1 and~3 terminated at exactly $i = 20$.
+
+\subsection{Step 4: Feature Attribution and Drift Severity Index}
+
+Upon drift confirmation, EADD exploits the trained discriminative classifier to diagnose \textit{which} features drive the detected drift using SHAP (SHapley Additive exPlanations)~\cite{b24}.
+
+\textbf{Feature Attribution.} EADD applies TreeSHAP~\cite{b31} to the trained LightGBM discriminator. Per-feature importances $\bar{\phi}_j = \frac{1}{n}\sum_{i=1}^{n}|\phi_j^{(i)}|$ are normalised into a contribution vector $\mathbf{s} = (s_1, \ldots, s_d)$, $s_j = \bar{\phi}_j / \sum_k \bar{\phi}_k$, identifying which features drive the shift and feeding the DSI below.
+
+\textbf{Drift Severity Index (DSI).} The normalised contribution vector $\mathbf{s}$ computed from TreeSHAP directly feeds the DSI: a composite severity metric combining detection confidence with attribution concentration:
+\begin{equation}
+\text{DSI} = \text{AUC} \times \left(1 - H_{\text{norm}}(\mathbf{s})\right)
+\label{eq:dsi}
+\end{equation}
+where $H_{\text{norm}}(\mathbf{s}) = -\sum_{j=1}^{d} s_j \log_2 s_j \,/\, \log_2 d$ is the normalised Shannon entropy~\cite{b34}. The $\log_2 d$ denominator ensures $H_{\text{norm}} \in [0, 1]$ regardless of dimensionality. DSI-based prescriptions map severity to recommended action. The tier boundaries below are proposed heuristics requiring domain-specific calibration; they are not empirically validated in the present work (all experiment DSI values fall in the Low tier):
+\begin{itemize}
+    \item \textbf{Critical (DSI $> 0.6$):} Concentrated drift, audit specific data pipeline.
+    \item \textbf{Moderate ($0.3$--$0.6$):} Subset drift, investigate shared data source.
+    \item \textbf{Low ($< 0.3$):} Diffuse shift, schedule full model retraining.
+\end{itemize}
 
 \section{Experimental Evaluation}
 
@@ -294,7 +292,7 @@ Three experiments were designed to validate EADD's detection accuracy, feature a
 
 \textbf{Experiment 3 (SHAP Attribution Accuracy):} Three controlled synthetic scenarios ($n{=}10{,}000$, $d{=}10$ features, drift injected at $t{=}5{,}000$): (a)~univariate drift in F3 only (mean shift $+2\sigma$), (b)~subset drift in F2/F5/F7 simultaneously, (c)~multivariate drift in all features. Precision@k (P@k) and Recall@k (R@k) measure whether the top-$k$ SHAP-ranked features exactly match the $k$ truly drifted features.
 
-\textbf{Configuration.} EADD: LightGBM~\cite{b23} (50 estimators, learning rate 0.1, 31 leaves), $N_{ref}{=}500$, $N_{cur}{=}200$, monitoring frequency $M{=}50$, ASPT ($B_{\max}{=}199$, $B_{\min}{=}10$, $\alpha{=}0.05$, AUC threshold $\tau{=}0.7$). D3~\cite{b9}: logistic regression (liblinear solver), matching window sizes, fixed AUC threshold 0.7. All experiments: Python 3.10, LightGBM 4.1.0, SHAP~\cite{b24} 0.42.1, scikit-learn 1.3.2. Random seeds fixed for reproducibility.
+\textbf{Configuration.} EADD uses a LightGBM~\cite{b23} discriminator with 50 estimators, a learning rate of 0.1, and 31 leaves, chosen to balance classifier capacity against the small per-window training budget. The reference window holds $N_{ref}{=}500$ samples and the sliding current window holds $N_{cur}{=}200$ samples, checked every $M{=}50$ stream samples to bound monitoring latency. The ASPT stage is configured with a maximum of $B_{\max}{=}199$ permutations and a minimum of $B_{\min}{=}10$ to enable early stopping, while the significance level $\alpha{=}0.05$ and AUC gate $\tau{=}0.7$ match D3's conservative operating point for a fair comparison. For the baseline, D3~\cite{b9} retains its original logistic regression classifier (liblinear solver) and uses the same window sizes and fixed AUC threshold of 0.7. All experiments run under Python 3.10 with LightGBM 4.1.0, SHAP~\cite{b24} 0.42.1, and scikit-learn 1.3.2; random seeds are fixed across detectors to ensure reproducibility.
 
 \subsection{Experiment 1: Synthetic Data}
 
@@ -321,7 +319,7 @@ Table~\ref{tab:exp1} presents drift type coverage and false alarm rates for all 
     \end{tabular*}
 \end{table}
 
-EADD is the only detector that achieved full drift-type coverage (4/4) with zero false alarms. We attribute the coverage advantage to LightGBM's non-linear discrimination---consistent with D3's documented failure on gradual and incremental drift~\cite{b9,b10}---though no ablation isolates this from other design choices (see Section~V). The ASPT then eliminates spurious detections on stable streams, bringing false alarms to zero. BNDM, CSDDM, IBDD, and OCDD also achieved 4/4 coverage (through different discriminators) but with substantially higher false alarm costs (4.75, 5.50, 46.25, and 17.50 mean FA, respectively)---demonstrating that coverage and false alarm control are separable objectives. D3 and SPLL detected only 2/4 types. UDetect failed on all four types.
+EADD is the only detector that achieved full drift-type coverage (4/4) with zero false alarms. We attribute the coverage advantage to LightGBM's non-linear discrimination, consistent with D3's documented failure on gradual and incremental drift~\cite{b9,b10}, though no ablation isolates this from other design choices (see Section~VI). The ASPT then eliminates spurious detections on stable streams, bringing false alarms to zero. BNDM, CSDDM, IBDD, and OCDD also achieved 4/4 coverage (through different discriminators) but with substantially higher false alarm costs (4.75, 5.50, 46.25, and 17.50 mean FA, respectively), demonstrating that coverage and false alarm control are separable objectives. D3 and SPLL detected only 2/4 types. UDetect failed on all four types.
 
 \textbf{False Alarm Robustness.} On four stable streams, EADD produced zero false alarms. D3 was vulnerable to autocorrelated data (87.4 false alarms at $\tau{=}0.6$; 54.6 at $\tau{=}0.7$); ASPT correctly identifies autocorrelation as non-significant ($p > 0.05$). A Mann--Whitney U test confirmed significantly fewer false alarms for EADD vs.\ D3 at $\tau{=}0.6$ ($p = 0.0101$, D3's benchmark default~\cite{b10}); at the matched $\tau{=}0.7$ operating point, the difference is not statistically significant ($p = 0.2266$), though EADD still produces zero false alarms vs.\ D3's 54.6 on autocorrelated streams.
 
@@ -377,17 +375,17 @@ Table~\ref{tab:exp3} presents the SHAP attribution accuracy using precision@k an
     \end{tabular*}
 \end{table}
 
-EADD achieved perfect attribution accuracy across all three scenarios; the DSI-based prescription was correct in all cases. The multivariate scenario ($k{=}d{=}10$) trivially satisfies P@k\,{=}\,R@k\,{=}\,1.0 for any ranking---the meaningful result is the univariate case (1/10 features drifted, correct feature F3 ranked first at 52.3\%). DSI correctly orders scenarios by concentration (univariate $>$ subset $>$ multivariate), as algebraically expected from Eq.~(\ref{eq:dsi}). All DSI values fall in the ``Low'' tier ($< 0.3$) under moderate $+2\sigma$ shifts; Critical and Moderate tiers require more severe drift and are not empirically reached here.
+EADD achieved perfect attribution accuracy across all three scenarios; the DSI-based prescription was correct in all cases. The multivariate scenario ($k{=}d{=}10$) trivially satisfies P@k\,{=}\,R@k\,{=}\,1.0 for any ranking, so the meaningful result is the univariate case (1/10 features drifted, correct feature F3 ranked first at 52.3\%). DSI correctly orders scenarios by concentration (univariate $>$ subset $>$ multivariate), as algebraically expected from Eq.~(\ref{eq:dsi}). All DSI values fall in the ``Low'' tier ($< 0.3$) under moderate $+2\sigma$ shifts; Critical and Moderate tiers require more severe drift and are not empirically reached here.
 
 \section{Conclusion}
 
 This paper presented EADD, extending discriminative drift detection with (1) ASPT + $H_{\text{pred}}$ for statistically rigorous drift confirmation, (2) SHAP attribution and DSI for feature-level diagnosis and severity quantification, and (3) evaluation against seven state-of-the-art detectors on synthetic and real-world streams.
 
-Evaluation demonstrated that EADD achieves full drift-type coverage (4/4) via LightGBM's non-linear discrimination, with zero false alarms via ASPT's significance filter---the only detector to achieve both simultaneously on synthetic benchmarks. EADD detects drift on three of four annotated real-world datasets, outperforming D3 on MTD in all three detected cases (InsectsAbrupt: 135 vs.\ 155.5; InsectsIncrAbrupt: 33 vs.\ 272.5, 8$\times$ faster; InsectsIncrRecur: 133 vs.\ 323.5; single-run estimates without variance). SHAP attribution achieves perfect accuracy (P@k\,{=}\,R@k\,{=}\,1.0) on controlled synthetic scenarios with independent features; the non-trivial result is univariate attribution (1/10 drifted features correctly identified). On stable streams, EADD produces zero false alarms vs.\ D3's 54.6 on autocorrelated streams at the matched $\tau{=}0.7$ operating point; the reduction vs.\ D3 at $\tau{=}0.6$ is statistically significant ($p = 0.0101$). By answering ``Is drift emerging?'', ``Is it significant?'', ``Which features caused it?'', and ``How severe?'', EADD transforms binary alarms into actionable diagnostics.
+Evaluation demonstrated that EADD achieves full drift-type coverage (4/4) via LightGBM's non-linear discrimination, with zero false alarms via ASPT's significance filter, the only detector to achieve both simultaneously on synthetic benchmarks. EADD detects drift on three of four annotated real-world datasets, outperforming D3 on MTD in all three detected cases (InsectsAbrupt: 135 vs.\ 155.5; InsectsIncrAbrupt: 33 vs.\ 272.5, 8$\times$ faster; InsectsIncrRecur: 133 vs.\ 323.5; single-run estimates without variance). SHAP attribution achieves perfect accuracy (P@k\,{=}\,R@k\,{=}\,1.0) on controlled synthetic scenarios with independent features; the non-trivial result is univariate attribution (1/10 drifted features correctly identified). On stable streams, EADD produces zero false alarms vs.\ D3's 54.6 on autocorrelated streams at the matched $\tau{=}0.7$ operating point; the reduction vs.\ D3 at $\tau{=}0.6$ is statistically significant ($p = 0.0101$). By answering ``Is drift emerging?'', ``Is it significant?'', ``Which features caused it?'', and ``How severe?'', EADD transforms binary alarms into actionable diagnostics.
 
-\subsection{Limitations and Future Work}
+\section{Limitations and Future Work}
 
-ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\max}{=}199$) permutation testing---a saving within EADD's own statistical stage. Separately, the discriminative paradigm overall remains ${\sim}50\times$ costlier than D3; this overhead arises from LightGBM training, not the permutation test, and is independent of the ASPT saving. No runtime table is reported. DSI ordering across scenarios is algebraically expected from its formula and does not constitute independent empirical validation; external ground-truth validity is not established---we do not show that higher DSI correlates with downstream model performance degradation. SHAP attributions are correlational, not causal~\cite{b33}. Attribution accuracy was tested on 3 controlled synthetic scenarios with independent features; performance under correlated or redundant features requires separate validation. No ablation isolates component contributions: replacing D3's logistic regression with LightGBM alone (without ASPT) may already achieve 4/4 coverage, so the benefit attributable to ASPT specifically is unknown. DSI tiers require domain-specific calibration. Prescriptions are heuristic and not evaluated by downstream outcomes (e.g., retraining quality). \textbf{Multiple testing over time}: the pipeline runs a hypothesis test every $M{=}50$ samples with ${\sim}75\%$ window overlap, each at $\alpha{=}0.05$ and no correction applied across time steps. The family-wise error rate therefore inflates with stream length; the zero false alarm result on synthetic streams is empirical rather than theoretically guaranteed. Sequential testing with anytime-valid e-values~\cite{b27} is a natural candidate to address this gap. Future work: e-value testing~\cite{b27}, causal attribution~\cite{b33}, adversarial robustness.
+ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\max}{=}199$) permutation testing, a saving within EADD's own statistical stage. Separately, the discriminative paradigm overall remains ${\sim}50\times$ costlier than D3; this overhead arises from LightGBM training, not the permutation test, and is independent of the ASPT saving. No runtime table is reported. DSI ordering across scenarios is algebraically expected from its formula and does not constitute independent empirical validation; external ground-truth validity is not established, as we do not show that higher DSI correlates with downstream model performance degradation. SHAP attributions are correlational, not causal~\cite{b33}. Attribution accuracy was tested on 3 controlled synthetic scenarios with independent features; performance under correlated or redundant features requires separate validation. No ablation isolates component contributions: replacing D3's logistic regression with LightGBM alone (without ASPT) may already achieve 4/4 coverage, so the benefit attributable to ASPT specifically is unknown. DSI tiers require domain-specific calibration. Prescriptions are heuristic and not evaluated by downstream outcomes (e.g., retraining quality). \textbf{Multiple testing over time}: the pipeline runs a hypothesis test every $M{=}50$ samples with ${\sim}75\%$ window overlap, each at $\alpha{=}0.05$ and no correction applied across time steps. The family-wise error rate therefore inflates with stream length; the zero false alarm result on synthetic streams is empirical rather than theoretically guaranteed. Sequential testing with anytime-valid e-values~\cite{b27} is a natural candidate to address this gap. Future work: e-value testing~\cite{b27}, causal attribution~\cite{b33}, adversarial robustness.
 
 % BLIND REVIEW: Keep this section commented for initial submission.
 % Uncomment ONLY for camera-ready submission after acceptance.
@@ -414,7 +412,7 @@ ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\m
 
 \bibitem{b9} \"{O}.~G\"{o}z\"{u}a\c{c}{\i}k, A.~B\"{u}y\"{u}k\c{c}ak{\i}r, H.~Bonab, and F.~Can, ``Unsupervised concept drift detection with a discriminative classifier,'' in \textit{Proc. ACM CIKM}, 2019, pp.~2365--2368.
 
-\bibitem{b10} D.~Lukats, O.~Zielinski, A.~Hahn, and F.~Stahl, ``A benchmark and survey of fully unsupervised concept drift detectors on real-world data streams,'' \textit{Int. J. Data Sci. Analytics}, vol.~19, pp.~1--31, 2024.
+\bibitem{b10} D.~Lukats, O.~Zielinski, A.~Hahn, and F.~Stahl, ``A benchmark and survey of fully unsupervised concept drift detectors on real-world data streams,'' \textit{Int. J. Data Sci. Analytics}, 2024, doi: 10.1007/s41060-024-00620-y.
 
 \bibitem{b11} M.~Baena-Garc\'{i}a et al., ``Early drift detection method,'' in \textit{Proc. ECML PKDD Workshop on Knowledge Discovery from Data Streams}, 2006, pp.~77--86.
 
@@ -440,7 +438,7 @@ ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\m
 
 \bibitem{b22} J.~S. Vitter, ``Random sampling with a reservoir,'' \textit{ACM Trans. Math. Softw.}, vol.~11, no.~1, pp.~37--57, 1985.
 
-\bibitem{b23} G.~Ke et al., ``LightGBM: A highly efficient gradient boosting decision tree,'' in \textit{Proc. NeurIPS}, 2017, pp.~3146--3154.
+\bibitem{b23} G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, and T.-Y.~Liu, ``LightGBM: A highly efficient gradient boosting decision tree,'' in \textit{Proc. NeurIPS}, 2017, pp.~3149--3157.
 
 \bibitem{b24} S.~M. Lundberg and S.-I.~Lee, ``A unified approach to interpreting model predictions,'' in \textit{Proc. NeurIPS}, 2017, pp.~4766--4777.
 
@@ -450,7 +448,7 @@ ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\m
 
 \bibitem{b28} P.~Panda, S.~S.~Kancheti, V.~N.~Balasubramanian, and G.~Sinha, ``Interpretable model drift detection,'' in \textit{Proc. ACM IKDD CODS-COMAD}, 2024.
 
-\bibitem{b29} J.~Feng, H.~Singh, F.~Xia, A.~Subbaswamy, and A.~Gossmann, ``A hierarchical decomposition for explaining {ML} performance discrepancies,'' in \textit{Proc. NeurIPS}, 2024.
+\bibitem{b29} H.~Singh, F.~Xia, A.~Subbaswamy, A.~Gossmann, and J.~Feng, ``A hierarchical decomposition for explaining {ML} performance discrepancies,'' in \textit{Proc. NeurIPS}, 2024.
 
 \bibitem{b30} A.~Gandy, ``Sequential implementation of Monte Carlo tests with uniformly bounded resampling risk,'' \textit{J. Am. Stat. Assoc.}, vol.~104, no.~488, pp.~1504--1511, 2009.
 
@@ -458,7 +456,7 @@ ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\m
 
 \bibitem{b32} F.~Hinder, V.~Vaquet, and B.~Hammer, ``Feature-based analyses of concept drift,'' \textit{Neurocomputing}, vol.~600, 127968, 2024.
 
-\bibitem{b33} K.~Budhathoki, D.~Janzing, P.~Bloebaum, and H.~Ng, ``Why did the distribution change?'' in \textit{Proc. AISTATS}, 2021, pp.~1666--1674.
+\bibitem{b33} K.~Budhathoki, D.~Janzing, P.~Bloebaum, and L.~Minorics, ``Why did the distribution change?'' in \textit{Proc. AISTATS}, 2021, pp.~1666--1674.
 
 \bibitem{b34} C.~E. Shannon, ``A mathematical theory of communication,'' \textit{Bell Syst. Tech. J.}, vol.~27, no.~3, pp.~379--423, 1948.
 \end{thebibliography}
