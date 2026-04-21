@@ -14,6 +14,7 @@
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage[hidelinks]{hyperref}
+\usepackage{balance}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,backgrounds,fit}
 \urlstyle{same}
@@ -50,7 +51,7 @@
 \maketitle
 
 \begin{abstract}
-Machine learning models in production suffer from distribution drift, where evolving input features degrade model performance. Existing unsupervised detectors signal that drift occurred but not which features drifted or how severe the shift is. This paper proposes Enhanced Adversarial Drift Detection (EADD), extending the D3 discriminative detector with three contributions: (1) an Adaptive Sequential Permutation Test (ASPT) for statistically rigorous drift confirmation, reducing the permutation budget by 90--95\%, with prediction entropy emitted as a continuous diagnostic output (not evaluated standalone); (2) SHAP-based drift localisation and a Drift Severity Index (DSI) for feature-level diagnosis and severity quantification; and (3) experiments benchmarking against seven state-of-the-art unsupervised detectors on synthetic and real-world streams. On synthetic data, EADD is the only detector achieving full drift-type coverage (4/4) with zero false alarms. On real-world benchmarks, EADD detects drift on three of four annotated datasets, outperforming D3 on detection delay in all three detected cases, up to 8x faster on incremental drift types (InsectsIncrAbrupt MTD 33 vs. D3 272.5). SHAP attribution achieves perfect accuracy (P@k = R@k = 1.0) on controlled synthetic scenarios with independent features. On stable streams, EADD produces zero false alarms versus D3's 54.6 on autocorrelated streams at the matched threshold of 0.7; the reduction versus D3 at threshold 0.6 is statistically significant (p = 0.0101, Mann--Whitney U).
+Machine learning models in production suffer from distribution drift, which degrades performance when input features evolve. Existing unsupervised detectors signal whether drift occurred but not which features drifted or how severe the shift is. This paper proposes Enhanced Adversarial Drift Detection (EADD), extending the D3 discriminative detector with: (1)~an Adaptive Sequential Permutation Test (ASPT) for rigorous drift confirmation that cuts the permutation budget by 90--95\%; (2)~SHAP-based drift localisation and a Drift Severity Index (DSI) for feature-level diagnosis and severity quantification; and (3)~a benchmark against seven state-of-the-art detectors on synthetic and real-world streams. On synthetic data, EADD uniquely achieves full drift-type coverage (4/4) with zero false alarms. On annotated INSECTS benchmarks, EADD detects drift in three of four datasets and beats D3 on mean time to detection, up to 8$\times$ faster on incremental drift. SHAP attribution achieves P@k\,=\,R@k\,=\,1.0, and the false-alarm reduction over D3 is statistically significant ($p=0.0101$, Mann--Whitney U).
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -145,20 +146,20 @@ As identified in Section~II, existing C2ST-based detectors lack continuous uncer
         \textbf{No Drift}\\[2pt]
         Resume monitoring};
 
-    \node[term, minimum width=3.7cm, minimum height=3.55cm, align=left] (output) at ([xshift=6.7cm,yshift=-2.55cm]dec1.center) {%
-        \textbf{Drift Alert}\\[6pt]
-        $H_\mathrm{pred}$\enspace (uncertainty monitor)\\[2pt]
+    \node[term, minimum width=3.7cm, minimum height=2.6cm, align=left] (output) at ([xshift=6.7cm, yshift=-2cm]s4.center) {%
+        \textbf{Drift Alert}\\[4pt]
+        $H_\mathrm{pred}$\enspace (uncertainty)\\[2pt]
         $p$-value\enspace (significance)\\[2pt]
         SHAP rankings\enspace (attribution)\\[2pt]
         DSI score\enspace (severity)\\[2pt]
         Prescription tier};
 
-    \node[head] at ([yshift=8pt]input.north) {Input};
+    \node[head] at ([yshift=8pt]s1.north -| input.center) {Input};
     \node[head] at ([yshift=8pt]s1.north) {EADD Detection Pipeline};
     \node[head] at ([yshift=8pt]s1.north -| output.center) {Output};
 
     \path (input.east) ++(0.95,0) coordinate (inlane);
-    \path (s4.east) ++(1.20,0) coordinate (rightlane);
+    \coordinate (farlane) at ([xshift=1.2cm]output.east);
 
     \draw[arr] (input.east) -- (inlane) |- ([yshift=3pt]s1.west);
 
@@ -169,11 +170,11 @@ As identified in Section~II, existing C2ST-based detectors lack continuous uncer
     \draw[arr] (dec2.south) -- node[lbl, right=2pt] {Yes} (s4.north);
 
     \draw[arr] (dec1.east) -- node[lbl, above=1pt] {No} (nodrift.west);
-    \draw[arr] (dec2.east) -- node[lbl, above=1pt] {No} (dec2.east -| rightlane) |- (nodrift.south);
+    \draw[arr] (dec2.east) -- node[lbl, above=1pt] {No} (dec2.east -| nodrift.south) -- (nodrift.south);
 
-    \draw[arr] (s4.east) -- (output.west);
+    \draw[arr] (s4.east) -- (s4.east -| output.north) -- (output.north);
 
-    \draw[darr] (s2.east) -- (s2.east -| rightlane) |- ([yshift=10pt]output.west);
+    \draw[darr] (s2.east) -- (s2.east -| farlane) |- (output.east);
 
     \end{tikzpicture}
     \caption{EADD detection pipeline. $W_\mathrm{cur}$ is compared against $W_\mathrm{ref}$ via a discriminative classifier; $H_\mathrm{pred}$ provides a continuous uncertainty monitoring signal (dashed). AUC $> \tau$ triggers ASPT for statistical confirmation (Step~3); upon significance, TreeSHAP and DSI localise and quantify the shift (Step~4).}
@@ -393,6 +394,7 @@ ASPT reduces the permutation budget by 90--95\% relative to fixed-budget ($B_{\m
 % This research project was partially supported by the Faculty of Information
 % and Communication Technology, Mahidol University.
 
+\balance
 \begin{thebibliography}{00}
 \bibitem{b1} J.~Lu, A.~Liu, F.~Dong, F.~Gu, J.~Gama, and G.~Zhang, ``Learning under concept drift: A review,'' \textit{IEEE Trans. Knowl. Data Eng.}, vol.~31, no.~12, pp.~2346--2363, 2019.
 
