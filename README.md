@@ -1,101 +1,77 @@
-# JCSSE 2026 Paper Submission Templates
+# JCSSE 2026 — EADD Full Paper (Round 3 Camera-Ready)
 
-LaTeX templates for **The 23rd International Joint Conference on Computer Science and Software Engineering (JCSSE 2026)**
+Camera-ready full-paper submission to **The 23rd International Joint Conference on Computer Science and Software Engineering (JCSSE 2026)** — Full Paper track, Round 3.
 
-📅 **Conference Dates:** June 24-27, 2026  
-📍 **Location:** Bangkok, Thailand  
+**Paper title:** *Enhanced Adversarial Drift Detection for MLOps Feature Monitoring*
+**Paper #:** 1571280455 (EDAS) · 2026172661 (IEEE PDF eXpress, Conference ID 68839X)
+**Status:** Accepted (Round 3); camera-ready submitted.
+
+📅 **Conference:** 24–27 June 2026
+📍 **Location:** The Royal River Hotel, Bangkok, Thailand
 🌐 **Website:** https://jcsse2026.org/
 
-## Templates
+## Files
 
-| Template | File | Pages | Purpose |
-|----------|------|-------|---------|
-| Extended Abstract | `jcsse2026_extended_abstract.tex` | 1-2 | Poster Session |
-| Full Paper | `jcsse2026_full_paper.tex` | up to 6 | Regular/Special Session |
+| File | Purpose |
+|---|---|
+| `jcsse2026_full_paper.tex` | LaTeX source (camera-ready, 6 pages, IEEEtran A4) |
+| `jcsse2026_full_paper.pdf` | Locally compiled PDF |
+| `2026172661.pdf` | **IEEE PDF eXpress-certified PDF** (the file uploaded to EDAS) |
+| `jcsse2026_slides.tex` / `.pdf` | Presentation slides for the conference talk |
+| `CopyrightReceipt.pdf` | Signed IEEE Electronic Copyright Form (eCF) receipt |
+| `IEEEtran.cls` | IEEE Conference Proceedings class (camera-ready 2018 template) |
 
-## Submission Guidelines
+## Format Requirements (JCSSE camera-ready)
 
-### Format Requirements
-- **Paper Size:** A4
-- **Font:** Times New Roman, 10pt
-- **Format:** IEEE Conference Proceedings (two-column)
-- **File Format:** PDF
+- **Paper size:** A4
+- **Class:** `\documentclass[conference,a4paper]{IEEEtran}`
+- **Pages:** ≤ 6 (full paper)
+- **Embedded fonts**, **PDF v1.4+**, **no bookmarks / hyperlinks / passwords**
+- **Author block:** all author info present (camera-ready, not blind)
+- **IEEE copyright notice** on page 1: NOT included — organizer adds it after submission
+- **Validation:** all final PDFs must pass IEEE PDF eXpress at https://ieee-pdf-express.org/ (Conference ID `68839X`) before EDAS upload
 
-### Blind Review
-⚠️ **IMPORTANT:** For initial submission, all author information must be omitted:
-- No author names
-- No affiliations
-- No email addresses
-- No acknowledgements that reveal identity
-
-Author information should only be added in the **camera-ready version** after paper acceptance.
-
-### Abstract
-- Approximately **150 words**
-- Clearly present: motivation, methodology, key findings
-- No abbreviations or citations
-
-## Important Dates
+## Important Dates (JCSSE 2026, Round 3 track)
 
 | Event | Date |
-|-------|------|
+|---|---|
 | Call for Special Sessions | 15 October 2025 |
-| Submission Deadline (1st Round) | 31 January 2026 |
-| Notification (1st Round) | 1 March 2026 |
-| Submission Deadline (2nd Round) | 30 March 2026 |
-| Notification (2nd Round) | 30 April 2026 |
-| Camera Ready Submission | 1 March - 15 May 2026 |
-| Early Bird Registration | 1 March - 7 May 2026 |
-| Registration | 8 - 15 May 2026 |
-| Conference | 24 - 27 June 2026 |
+| Deadline for Submission 1st Round | 31 January 2026 |
+| Notification of Acceptance 1st Round | 1 March 2026 |
+| Camera Ready Submission 1st Round | 1 – 27 March 2026 |
+| Deadline for Submission 2nd Round | 30 March 2026 |
+| Notification of Acceptance 2nd Round | 30 April 2026 |
+| Camera Ready Submission 2nd Round | 1 March – 15 May 2026 |
+| **Deadline for Submission 3rd Round** | **24 April 2026** |
+| **Notification of Acceptance 3rd Round** | **6 May 2026** |
+| **Camera Ready Submission 3rd Round** | **6 May – 15 May 2026** ← this paper |
+| Early Bird Registration | 9 March – 10 May 2026 (Bangkok Local Time, GMT+7) |
+| Author Registration | 9 March – 15 May 2026 (Bangkok Local Time, GMT+7) |
+| Non-Author Registration | 11 – 22 May 2026 (Bangkok Local Time, GMT+7) |
+| Conference | 24 – 27 June 2026 |
 
-## Topics of Interest
+## How to Reproduce / Recompile
 
-- Agricultural and Industrial Informatics
-- Artificial Intelligence
-- Blockchain and Smart Contract
-- Cloud and Grid Computing
-- Computer Educational Technology
-- Computer Networks and Communications
-- Computer Security and Cryptography
-- Database, Data Management and Data Mining
-- Health, Wellness and Bioinformatics
-- Human Computer/Machine Interaction
-- Image Processing and Computer Vision
-- Internet of Things and Embedded Systems
-- Knowledge Representation and Management
-- Machine Learning and Intelligent Systems
-- Natural Language Processing
-- Ontology and Semantic Web
-- Pervasive and Mobile Computing
-- Quantum Computing and Algorithms
-- Software Engineering and Software Development
-- Sustainable Computing
+```bash
+pdflatex jcsse2026_full_paper.tex
+pdflatex jcsse2026_full_paper.tex   # second pass to resolve \cite and \ref
+```
 
-## How to Use
-
-1. Choose the appropriate template for your submission type
-2. Replace placeholder content with your research
-3. Keep author information commented out for blind review
-4. Compile with `pdflatex`:
-   ```bash
-   pdflatex jcsse2026_extended_abstract.tex
-   # or
-   pdflatex jcsse2026_full_paper.tex
-   ```
+Requires: TeX Live 2018+ with `IEEEtran.cls` (provided here), `algorithm`, `algorithmic`, `booktabs`, `tikz`, `balance` packages.
 
 ## Publication
 
-- Accepted papers will be published in IEEE Xplore (requires in-person presentation)
-- Selected papers invited for extended publication in ECTI-CIT (SCOPUS indexed)
+- Accepted full papers are published in **IEEE Xplore** (requires in-person presentation by at least one registered author).
+- Selected papers may be invited for extended publication in **ECTI-CIT** (SCOPUS-indexed).
 
 ## Contact
 
-**Email:** jcsse2026@kmutt.ac.th
+**Conference enquiries:** jcsse2026@kmutt.ac.th
+**Author (corresponding):** Nusrat Begum — `nusrat.beg@student.mahidol.ac.th`
 
 ---
 
-*Templates based on IEEE Conference Proceedings format and official JCSSE 2026 guidelines.*
+*Template based on the official IEEE Conference Proceedings camera-ready 2018 template and JCSSE 2026 guidelines.*
 
 ---
 
