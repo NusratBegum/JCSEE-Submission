@@ -1,0 +1,81 @@
+License for JCSEE-Submission Repository
+=========================================
+
+This repository contains the camera-ready submission materials for:
+
+  "Enhanced Adversarial Drift Detection for MLOps Feature Monitoring"
+  Nusrat Begum, Phaphontee Yamchote, Chainarong Amornbunchornvej,
+  Thanapon Noraset
+  Proc. 2026 23rd International Joint Conference on Computer Science
+  and Software Engineering (JCSSE), Bangkok, Thailand, June 24-27, 2026.
+
+================================================================================
+IMPORTANT: TWO DIFFERENT COPYRIGHT REGIMES APPLY TO THIS REPOSITORY
+================================================================================
+
+1) Published Paper PDF (jcsse2026_full_paper.pdf, 2026172661.pdf):
+   Copyright (c) 2026 IEEE. All rights reserved.
+
+   The published version of this paper is the property of the Institute of
+   Electrical and Electronics Engineers (IEEE). Copyright was transferred
+   to IEEE under the IEEE Electronic Copyright Form executed by the
+   authors on 2026.
+
+   The PDF in this repository is the author's accepted version (preprint),
+   posted under IEEE author rights which permit:
+     - Posting on the author's personal website
+     - Posting in the author's employer or institutional repository
+     - Sharing among colleagues for personal research use only
+
+   Permitted uses of the PDF: personal, non-commercial, scholarly reading
+   and citation. NOT permitted: redistribution, reposting on third-party
+   sites, commercial use, or creation of derivative works.
+
+   Use of the published PDF requires compliance with IEEE policies:
+   https://journals.ieeeauthorcenter.ieee.org/become-an-ieee-journal-author/publishing-ethics/guidelines-and-policies/post-publication-policies/
+
+2) LaTeX Source, Figures, Tables, Slides, and Other Author-Created
+   Materials in this Repository (all .tex / .png / .pdf files of figures /
+   .tex slide deck / supplementary text):
+
+   Copyright (c) 2026 Nusrat Begum.
+
+   Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+   4.0 International License (CC BY-NC-ND 4.0).
+
+   To view a copy of this license, visit:
+     https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
+
+   Permitted: share the unmodified source for non-commercial purposes
+   with full attribution to Nusrat Begum and citation of the JCSSE paper.
+
+   Not permitted: commercial use, modification, derivative works,
+   relicensing, or removing attribution.
+
+================================================================================
+ATTRIBUTION (when citing or sharing)
+================================================================================
+
+@inproceedings{begum2026eadd,
+  author    = {Begum, Nusrat and Yamchote, Phaphontee and
+               Amornbunchornvej, Chainarong and Noraset, Thanapon},
+  title     = {Enhanced Adversarial Drift Detection for MLOps
+               Feature Monitoring},
+  booktitle = {Proc. 23rd International Joint Conference on Computer
+               Science and Software Engineering (JCSSE)},
+  year      = {2026},
+  address   = {Bangkok, Thailand},
+  publisher = {IEEE},
+}
+
+================================================================================
+DISCLAIMER
+================================================================================
+
+THE MATERIALS IN THIS REPOSITORY ARE PROVIDED "AS IS", WITHOUT WARRANTY
+OF ANY KIND. UNDER NO CIRCUMSTANCES SHALL THE AUTHORS OR IEEE BE LIABLE
+FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE WORK OR ITS USE.
+
+For licensing inquiries beyond what is granted here (including commercial
+licensing of the source materials), contact: nusrat.beg@student.mahidol.ac.th
