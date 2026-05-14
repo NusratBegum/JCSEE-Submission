@@ -96,3 +96,31 @@ Author information should only be added in the **camera-ready version** after pa
 ---
 
 *Templates based on IEEE Conference Proceedings format and official JCSSE 2026 guidelines.*
+
+---
+
+## License
+
+**Two regimes apply to this repository — see [LICENSE](LICENSE) for full terms.**
+
+| Material | License | Notes |
+|---|---|---|
+| Published paper PDF (`jcsse2026_full_paper.pdf`, `2026172661.pdf`) | © 2026 IEEE. All rights reserved. | Copyright transferred to IEEE via signed eCF. Personal scholarly use only. |
+| LaTeX source, figures, slides, supplementary materials (© 2026 Nusrat Begum) | [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) | Share-only, non-commercial, no derivatives, with attribution. |
+
+**Commercial use** of any material requires written permission from the author: `nusrat.beg@student.mahidol.ac.th`.
+
+**Citation** (required for any sharing):
+
+```bibtex
+@inproceedings{begum2026eadd,
+  author    = {Begum, Nusrat and Yamchote, Phaphontee and
+               Amornbunchornvej, Chainarong and Noraset, Thanapon},
+  title     = {Enhanced Adversarial Drift Detection for MLOps
+               Feature Monitoring},
+  booktitle = {Proc. 23rd International Joint Conference on Computer
+               Science and Software Engineering (JCSSE)},
+  year      = {2026},
+  publisher = {IEEE},
+}
+```
