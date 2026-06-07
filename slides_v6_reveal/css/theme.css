@@ -18,8 +18,8 @@
   --panel-2:rgba(61,5,40,.55);
   --pos:#36e29b;  --neg:#ff5470;  --warn:#ffc24b;  --base:#9aa0b0;
   --epi:Epilogue, system-ui, sans-serif;
-  /* body/paragraph = Actor with Arial fallback (per brand system) */
-  --zil:"Actor", Arial, sans-serif;
+  /* body/paragraph = Arial (per brand system) */
+  --zil:Arial, Helvetica, sans-serif;
   --gap:48px;
 }
 
@@ -90,7 +90,16 @@ body[data-mood="2"] .brand-glow.b2{ background:radial-gradient(circle, rgba(61,5
 
 /* hide default reveal slide number (we draw our own in footer via JS) */
 .reveal .progress{ color:var(--pink); height:3px; }
-.reveal .controls{ color:var(--pink); }
+
+/* navigation arrows → compact bottom-right corner (only left/right) */
+.reveal .controls{ color:var(--pink); right:0; bottom:0; }
+.reveal .controls .navigate-up,
+.reveal .controls .navigate-down{ display:none !important; }
+.reveal .controls .navigate-left,
+.reveal .controls .navigate-right{ position:fixed !important; bottom:40px !important;
+  top:auto !important; left:auto !important; margin:0 !important; }
+.reveal .controls .navigate-right{ right:20px !important; }
+.reveal .controls .navigate-left{ right:60px !important; }
 
 /* ---------- reusable brand components ---------- */
 .kicker{ font-family:var(--epi); font-weight:600; font-size:16px; letter-spacing:.28em;

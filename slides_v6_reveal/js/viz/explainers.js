@@ -155,7 +155,30 @@
     return { stop: function () { clearInterval(auto); } };
   }
 
+  /* ---- H_pred: entropy line dropping as drift builds (continuous sub-threshold signal) ---- */
+  function entropyDrop(el) {
+    var W = 720, H = 320, m = { t: 30, r: 24, b: 44, l: 50 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    var s = svg(el, W, H), g = s.append("g").attr("transform", "translate(" + m.l + "," + m.t + ")");
+    var x = d3.scaleLinear().domain([0, 100]).range([0, iw]);
+    var y = d3.scaleLinear().domain([0, 1]).range([ih, 0]);
+    g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(4).tickSize(-iw)).selectAll("path,line").attr("stroke", "rgba(255,255,255,.08)");
+    epi(g.selectAll(".axis text")).attr("fill", FAINT).attr("font-size", 12);
+    // entropy stays ~high then drops after drift builds
+    var data = d3.range(0, 101).map(function (t) { return [t, t < 45 ? 0.92 + (Math.random() - .5) * .04 : Math.max(0.12, 0.92 - (t - 45) * 0.014)]; });
+    var line = d3.line().x(function (d) { return x(d[0]); }).y(function (d) { return y(d[1]); }).curve(d3.curveBasis);
+    var p = g.append("path").attr("d", line(data)).attr("fill", "none").attr("stroke", PINK).attr("stroke-width", 3.5).attr("filter", "url(#gl)");
+    var len = p.node().getTotalLength();
+    p.attr("stroke-dasharray", len).attr("stroke-dashoffset", len).transition().duration(1800).attr("stroke-dashoffset", 0);
+    g.append("line").attr("x1", x(45)).attr("x2", x(45)).attr("y1", 0).attr("y2", ih).attr("stroke", "rgba(255,255,255,.3)").attr("stroke-dasharray", "5 5");
+    epi(g.append("text")).attr("x", x(45) + 6).attr("y", 16).attr("fill", FAINT).attr("font-size", 12).text("drift builds");
+    epi(g.append("text")).attr("x", 0).attr("y", -12).attr("fill", FAINT).attr("font-size", 13).attr("font-weight", 600).text("PREDICTION ENTROPY  H_pred  (every step, even sub-threshold)");
+    epi(g.append("text")).attr("x", iw).attr("y", y(.12) + 4).attr("text-anchor", "end").attr("fill", PINK).attr("font-size", 13).attr("font-weight", 700)
+      .attr("opacity", 0).text("low entropy → confident drift").transition().delay(1700).duration(400).attr("opacity", 1);
+    return {};
+  }
+
   window.VIZ = window.VIZ || {};
+  window.VIZ.entropyDrop = { mount: entropyDrop };
   window.VIZ.c2st = { mount: c2st };
   window.VIZ.asptDemo = { mount: asptDemo };
   window.VIZ.shapFeat = { mount: shapFeat };

@@ -24,7 +24,7 @@
       Nusrat Begum<sup class="cite">1</sup> &nbsp; Phaphontee Yamchote<sup class="cite">1</sup> &nbsp;
       Chainarong Amornbunchornvej<sup class="cite">2</sup> &nbsp; Thanapon Noraset<sup class="cite">1</sup></div>
     <div class="src" style="margin-top:9px;"><span class="k">1</span> Faculty of ICT, Mahidol University &nbsp;&nbsp; <span class="k">2</span> NECTEC, NSTDA, Thailand</div>
-    <div class="src" style="margin-top:20px;font-size:13px;color:var(--faint);max-width:820px;line-height:1.5;">This research project was partially supported by the Faculty of Information and Communication Technology, Mahidol University.</div>
+    <div class="src" style="margin-top:20px;font-size:13px;color:var(--faint);max-width:1000px;line-height:1.5;">This research project was partially supported by the Faculty of Information and Communication Technology, Mahidol University.</div>
   </div>
 </section>
 
@@ -97,10 +97,10 @@
     <h2 style="margin-top:14px;">Silent decay is expensive</h2>
     <div class="rule"></div>
     <div class="cols c-2">
-      <div class="box"><div class="box-tag">Clinical ML</div>
-        <p class="lead" style="margin-top:10px;">Clinical prediction models lose measurable accuracy within <span class="pink">months</span> of deployment under temporal shift.<sup class="cite">12</sup></p></div>
-      <div class="box"><div class="box-tag">The real question</div>
-        <p class="lead" style="margin-top:10px;">In high-stakes domains a binary alarm is useless. Teams need <b>root-cause</b>: which pipeline? which feature? real or noise?</p></div>
+      <div class="box"><span class="contrib-ic" style="--icm:url(icons/bell-alert.svg)"></span><div class="box-tag">Clinical ML</div>
+        <p class="lead" style="margin-top:10px;">Clinical models lose measurable accuracy within <span class="pink">months</span> of deployment.<sup class="cite">[12]</sup></p></div>
+      <div class="box"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">The real question</div>
+        <p class="lead" style="margin-top:10px;">A binary alarm is useless. Teams need <b>root-cause</b>: which pipeline? which feature? real or noise?</p></div>
     </div>
     <p class="lead" style="margin-top:26px;color:var(--white);">Existing detectors answer <b>whether</b>. Practitioners must also know <span class="pink">which</span> and <span class="pink">how severe</span>.</p>
   </div>
@@ -141,7 +141,11 @@
       <div class="box tight"><div class="box-tag">Incremental</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,58 36,50 72,42 108,32 144,22 180,14" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">small steps 0.1σ</p></div>
       <div class="box tight"><div class="box-tag">Recurring</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,50 45,18 90,50 135,18 180,50" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">oscillating</p></div>
     </div>
-    <p class="lead" style="margin-top:24px;">Linear detectors handle abrupt shifts but <span class="pink">miss gradual & incremental</span> drift — exactly where non-linear models help.</p>
+    <div class="cols c-2" style="margin-top:22px;gap:30px;">
+      <div class="defcard"><div class="dt">Covariate drift</div><div class="dd">The <b>inputs</b> P(x) change — what EADD detects, label-free.</div></div>
+      <div class="defcard"><div class="dt">Concept drift</div><div class="dd">The <b>input→output</b> rule P(y|x) changes — needs labels to see directly.</div></div>
+    </div>
+    <p class="lead" style="margin-top:18px;font-size:22px;">Linear detectors catch abrupt shifts but <span class="pink">miss gradual & incremental</span> — where non-linear models win.</p>
   </div>
 </section>
 
@@ -270,13 +274,13 @@
     <h2 style="margin-top:14px;">Prediction entropy H_pred</h2>
     <div class="rule"></div>
     <div class="cols c-55">
+      <div class="viz" data-viz="entropyDrop"></div>
       <div>
-        <p class="lead">A continuous uncertainty signal from the Shannon entropy<sup class="cite">9</sup> of the classifier’s output probabilities.</p>
-        <p class="lead" style="margin-top:14px;">Gives <b>sub-threshold</b> trend information on <em>every</em> step — even before AUC crosses τ.</p>
+        <div class="defcard"><div class="dt">Entropy <sup class="cite" style="color:var(--faint)">[9]</sup></div>
+          <div class="dd">A measure of <b>uncertainty</b>. High = the classifier is unsure (no drift); low = it is confident it can separate them (drift building).</div></div>
+        <div class="box eq" style="margin-top:14px;"><div style="font-family:var(--epi);font-size:26px;color:#fff;">H_pred = −Σ pᵢ log₂ pᵢ</div></div>
+        <p class="lead" style="margin-top:14px;font-size:21px;">An early-warning signal on <b>every</b> step — even before AUC crosses the threshold.</p>
       </div>
-      <div class="box eq"><div class="box-tag">signal</div>
-        <div style="font-family:var(--epi);font-size:30px;margin-top:14px;color:#fff;">H_pred = −Σ pᵢ log₂ pᵢ</div>
-        <p class="src" style="margin-top:14px;">low entropy ⇒ confident separation ⇒ drift building.</p></div>
     </div>
   </div>
 </section>
@@ -368,9 +372,9 @@
     <h2 style="margin-top:14px;">Datasets, baselines, config</h2>
     <div class="rule"></div>
     <div class="cols c-3">
-      <div class="box tight"><div class="box-tag">Synthetic</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">4 drift types + 4 stable streams · n=5–10k, d=5</p></div>
-      <div class="box tight"><div class="box-tag">Real-world</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">13 streams (Lukats 2024) · 4 annotated INSECTS</p></div>
-      <div class="box tight"><div class="box-tag">SHAP</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">n=10k, d=10 · drift @ t=5000 · uni/subset/multi</p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/squares-2x2.svg)"></span><div class="box-tag">Synthetic</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">4 drift types + 4 stable streams · n=5–10k, d=5</p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/signal.svg)"></span><div class="box-tag">Real-world</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">13 streams (Lukats 2024)<sup class="cite">[2]</sup> · 4 annotated INSECTS<sup class="cite">[11]</sup></p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">SHAP</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">n=10k, d=10 · drift @ t=5000 · uni/subset/multi</p></div>
     </div>
     <div class="box tight" style="margin-top:18px;"><div class="box-tag">Baselines & config</div>
       <p class="src" style="font-size:15px;margin-top:6px;line-height:1.6;">D3 · BNDM · CSDDM · IBDD · OCDD · SPLL · UDetect &nbsp;|&nbsp; LightGBM 50 trees · N_ref 500 · N_cur 200 · M 50 · B_max 199 · α 0.05 · τ 0.7</p></div>
