@@ -13,6 +13,8 @@
 <body>
 <div class="reveal"><div class="slides">
 
+<!-- ============================ OPENING ============================ -->
+
 <!-- 1 · TITLE -->
 <section data-background-color="#000000">
   <div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
@@ -31,189 +33,431 @@
 <!-- 2 · HOOK -->
 <section>
   <div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
-    <div class="lead" style="font-size:54px;color:var(--white);line-height:1.18;max-width:1000px;">
-      Production ML fails <span class="pink">silently.</span><br>
-      EADD tells you <b>whether</b>, <b>when</b>,
-      <span class="pink">which</span>, and <span class="pink">how&nbsp;severe</span><br>— in one streaming pipeline.</div>
+    <div class="lead" style="font-size:50px;color:var(--white);line-height:1.22;max-width:1040px;">
+      Machine-learning models in production can fail <span class="pink">silently.</span><br>
+      EADD reports <b>whether</b> drift occurred, <b>when</b>,
+      <span class="pink">which</span> features changed, and <span class="pink">how&nbsp;severe</span> the change is — within a single streaming pipeline.</div>
   </div>
 </section>
 
 <!-- 3 · ROADMAP -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">00</span><span>Roadmap</span></div>
-    <h2 style="margin-top:18px;">Six acts</h2>
+    <div class="kicker"><span class="n">00</span><span>Outline</span></div>
+    <h2 style="margin-top:14px;">The journey of this talk</h2>
     <div class="rule"></div>
-    <div class="cols c-3" style="gap:22px;margin-top:8px;">
-      <div class="box tight"><div class="box-tag">01 · Problem</div><div class="lead" style="font-size:22px;margin-top:6px;">Silent failure & the diagnostic gap</div></div>
-      <div class="box tight"><div class="box-tag">02 · Background</div><div class="lead" style="font-size:22px;margin-top:6px;">Drift, C2ST, D3 & its gaps</div></div>
-      <div class="box tight"><div class="box-tag">03 · EADD</div><div class="lead" style="font-size:22px;margin-top:6px;">Pipeline · ASPT · SHAP · DSI</div></div>
-      <div class="box tight"><div class="box-tag">04 · Evidence</div><div class="lead" style="font-size:22px;margin-top:6px;">4 experiments · 8 detectors</div></div>
-      <div class="box tight"><div class="box-tag">05 · Discussion</div><div class="lead" style="font-size:22px;margin-top:6px;">Limits & honest caveats</div></div>
-      <div class="box tight"><div class="box-tag">06 · Conclusion</div><div class="lead" style="font-size:22px;margin-top:6px;">What it gives MLOps</div></div>
+    <div class="cols" style="grid-template-columns:repeat(3,1fr);gap:18px 24px;margin-top:4px;">
+      <div class="box tight"><div class="box-tag">01 · Introduction</div><div class="lead" style="font-size:19px;margin-top:6px;">What drift is, its types, and why it matters</div></div>
+      <div class="box tight"><div class="box-tag">02 · Motivation</div><div class="lead" style="font-size:19px;margin-top:6px;">Why monitor features, not just labels</div></div>
+      <div class="box tight"><div class="box-tag">03 · History</div><div class="lead" style="font-size:19px;margin-top:6px;">Seven decades of drift detection</div></div>
+      <div class="box tight"><div class="box-tag">04 · Related work</div><div class="lead" style="font-size:19px;margin-top:6px;">The discriminative approach and its leaders</div></div>
+      <div class="box tight"><div class="box-tag">05 · Problem</div><div class="lead" style="font-size:19px;margin-top:6px;">The diagnostic gap left by D3</div></div>
+      <div class="box tight"><div class="box-tag">06 · Contributions</div><div class="lead" style="font-size:19px;margin-top:6px;">ASPT, SHAP + DSI, and a benchmark</div></div>
+      <div class="box tight"><div class="box-tag">07 · Method</div><div class="lead" style="font-size:19px;margin-top:6px;">The EADD pipeline, step by step</div></div>
+      <div class="box tight"><div class="box-tag">08–09 · Experiments &amp; results</div><div class="lead" style="font-size:19px;margin-top:6px;">Evidence across eight detectors</div></div>
+      <div class="box tight"><div class="box-tag">10–12 · Evaluation &amp; conclusion</div><div class="lead" style="font-size:19px;margin-top:6px;">Limits, future work, and takeaways</div></div>
     </div>
   </div>
 </section>
 
+<!-- ============================ PART 01 · INTRODUCTION ============================ -->
+
 <!-- 4 · DIVIDER 01 -->
 <section data-background-color="#000000">
   <div class="divider pad"><div class="ghost">01</div>
-    <div class="secno">Act 01</div><div class="dh">The Problem</div>
-    <div class="dsub">Why a binary “drift detected” alarm is not enough.</div></div>
+    <div class="secno">Part 01</div><div class="dh">Introduction</div>
+    <div class="dsub">What distribution drift is, the forms it takes, and why it breaks deployed models.</div></div>
 </section>
 
-<!-- 4b · LIVE DRIFT STREAM (animated explainer) -->
+<!-- 5 · WHAT IS DRIFT (live stream) -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">01</span><span>Concept drift, live</span></div>
-    <h2 style="margin-top:12px;">Watch a feature distribution move</h2>
+    <div class="kicker"><span class="n">01</span><span>Introduction · the core idea</span></div>
+    <h2 style="margin-top:12px;">What is distribution drift?</h2>
     <div class="rule"></div>
     <div class="viz" data-viz="driftStream"></div>
-    <p class="lead" style="margin-top:16px;">Inputs stream in; the distribution holds — then <span class="pink">drifts</span>. A classifier that can suddenly tell <em>reference</em> from <em>current</em> is the alarm.</p>
+    <p class="lead" style="margin-top:16px;">A model assumes the future resembles the past. <b>Distribution drift</b> is when that assumption breaks: the incoming data change shape. At first the stream is stable; when it <span class="pink">drifts</span>, a classifier can suddenly tell recent data (<em>current</em>) from earlier data (<em>reference</em>). That moment of separability is the signal we detect.<sup class="cite">[3]</sup></p>
   </div>
 </section>
 
-<!-- 5 · SILENT FAILURE (interactive drift morph) -->
+<!-- 6 · MLOPS BLIND SPOT -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">01</span><span>Distribution drift</span></div>
-    <h2 style="margin-top:14px;">A feature quietly shifts</h2>
+    <div class="kicker"><span class="n">01</span><span>Introduction · the blind spot</span></div>
+    <h2 style="margin-top:12px;">The MLOps blind spot</h2>
+    <div class="rule"></div>
+    <div class="status">
+      <div class="spanel ok"><div class="sh"><span class="sled g"></span>Software infrastructure</div>
+        <div class="sb">Servers respond. The API returns <b>200 OK</b>. No exception is thrown, no alert fires. Everything <b>looks</b> healthy.</div></div>
+      <div class="spanel bad"><div class="sh"><span class="sled r"></span>Model quality</div>
+        <div class="sb">Meanwhile the inputs shift, predictions degrade, and accuracy decays <b>silently</b> — with no crash to reveal it.<sup class="cite">[12]</sup></div></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">Traditional monitoring watches the <em>system</em>. Drift detection watches the <span class="pink">data</span> — the only early warning a healthy-looking pipeline will give you.</p>
+  </div>
+</section>
+
+<!-- 7 · DRIFT ILLUSTRATED (curve morph) -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">01</span><span>Introduction · illustrated</span></div>
+    <h2 style="margin-top:14px;">Distribution drift, illustrated</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="driftCurve"></div>
       <div>
-        <p class="lead">A model assumes tomorrow looks like training. It rarely does — inputs <b>drift</b>, and accuracy decays <span class="pink">silently.</span></p>
-        <p class="lead fragment" data-viz-step="driftCurve" style="margin-top:14px;">A <b>classifier two-sample test</b> catches it: if a classifier can separate <em>reference</em> from <em>current</em>, the distribution moved.</p>
-        <div class="src" style="margin-top:18px;">press → to inject drift &nbsp;·&nbsp; <span class="k">C2ST</span> Lopez-Paz &amp; Oquab 2017</div>
+        <p class="lead">A deployed model assumes that future data resemble its training data. In practice they often do not: the inputs <b>drift</b>, and accuracy degrades with no visible error.</p>
+        <p class="lead fragment" data-viz-step="driftCurve" style="margin-top:14px;">A <b>classifier two-sample test</b> detects this. If a classifier can separate <em>reference</em> data from <em>current</em> data, the distribution has changed.</p>
+        <div class="src" style="margin-top:18px;">Press → to inject drift. &nbsp; C2ST: Lopez-Paz and Oquab, 2017 <span class="cite">[3]</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 6 · STAKES -->
+<!-- 8 · DRIFT BY NATURE -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">01</span><span>Real-world stakes</span></div>
-    <h2 style="margin-top:14px;">Silent decay is expensive</h2>
+    <div class="kicker"><span class="n">01</span><span>Introduction · by nature of change</span></div>
+    <h2 style="margin-top:14px;">What part of the data changes?</h2>
     <div class="rule"></div>
-    <div class="cols c-2">
-      <div class="box"><span class="contrib-ic" style="--icm:url(icons/bell-alert.svg)"></span><div class="box-tag">Clinical ML</div>
-        <p class="lead" style="margin-top:10px;">Clinical models lose measurable accuracy within <span class="pink">months</span> of deployment.<sup class="cite">[12]</sup></p></div>
-      <div class="box"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">The real question</div>
-        <p class="lead" style="margin-top:10px;">A binary alarm is useless. Teams need <b>root-cause</b>: which pipeline? which feature? real or noise?</p></div>
+    <div class="cols c-3" style="gap:24px;">
+      <div class="defcard"><div class="dt">Covariate drift &nbsp;·&nbsp; P(x)</div><div class="dd">The <b>inputs</b> change while the input-to-output rule stays the same. A fraud model meets a new user population. EADD targets this — <b>no labels needed</b>.</div></div>
+      <div class="defcard"><div class="dt">Concept drift &nbsp;·&nbsp; P(y|x)</div><div class="dd">The <b>rule itself</b> changes. What counts as "creditworthy" shifts with the economy. Detecting it directly requires labels.</div></div>
+      <div class="defcard"><div class="dt">Prior drift &nbsp;·&nbsp; P(y)</div><div class="dd">The <b>mix of outcomes</b> changes — a seasonal surge in one class — while each class looks the same.</div></div>
     </div>
-    <p class="lead" style="margin-top:26px;color:var(--white);">Existing detectors answer <b>whether</b>. Practitioners must also know <span class="pink">which</span> and <span class="pink">how severe</span>.</p>
+    <p class="lead" style="margin-top:24px;">This thesis focuses on <span class="pink">covariate (feature) drift</span>, because it can be caught early, before labels arrive and before performance visibly drops.</p>
   </div>
 </section>
 
-<!-- 7 · FOUR QUESTIONS -->
+<!-- 9 · DRIFT BY TEMPORAL PATTERN -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">01</span><span>The four questions</span></div>
-    <h2 style="margin-top:14px;">One pipeline, four answers</h2>
+    <div class="kicker"><span class="n">01</span><span>Introduction · by temporal pattern</span></div>
+    <h2 style="margin-top:14px;">Four temporal patterns of drift</h2>
+    <div class="rule"></div>
+    <div class="cols" style="grid-template-columns:repeat(4,1fr);gap:22px;">
+      <div class="box tight"><div class="box-tag">Abrupt</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,55 80,55 80,18 180,18" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">an instant shift</p></div>
+      <div class="box tight"><div class="box-tag">Gradual</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,55 70,55 130,18 180,18" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">old and new blend</p></div>
+      <div class="box tight"><div class="box-tag">Incremental</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,58 36,50 72,42 108,32 144,22 180,14" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">small steady steps</p></div>
+      <div class="box tight"><div class="box-tag">Recurring</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,50 45,18 90,50 135,18 180,50" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">periodic return</p></div>
+    </div>
+    <p class="lead" style="margin-top:24px;font-size:22px;">Each pattern stresses a detector differently. Linear detectors handle abrupt shifts but often miss gradual and incremental drift — which is exactly where a <span class="pink">non-linear model</span> helps.</p>
+  </div>
+</section>
+
+<!-- 10 · REAL-WORLD IMPACTS -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">01</span><span>Introduction · why it matters</span></div>
+    <h2 style="margin-top:14px;">Unmonitored drift is costly</h2>
+    <div class="rule"></div>
+    <div class="excards">
+      <div class="excard"><span class="exic" style="--icm:url(icons/bell-alert.svg)"></span><div class="ext">Clinical prediction</div>
+        <div class="exd">Hospital models lose measurable accuracy within <b>months</b> as patient cohorts shift over time.<sup class="cite">[12]</sup></div></div>
+      <div class="excard"><span class="exic" style="--icm:url(icons/scale.svg)"></span><div class="ext">Credit &amp; finance</div>
+        <div class="exd">A credit model trained on one demographic misjudges a <b>new population</b>, even when the definition of risk is unchanged.</div></div>
+      <div class="excard"><span class="exic" style="--icm:url(icons/signal.svg)"></span><div class="ext">Sensors &amp; IoT</div>
+        <div class="exd">Sensor wear and seasonal cycles move the input distribution, causing <b>silent misclassification</b> on the factory floor.</div></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">In each case, a binary "drift detected" alarm is not enough. Practitioners need to know <span class="pink">which</span> feature moved and <span class="pink">how severe</span> the shift is.</p>
+  </div>
+</section>
+
+<!-- ============================ PART 02 · MOTIVATION ============================ -->
+
+<!-- 11 · DIVIDER 02 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">02</div>
+    <div class="secno">Part 02</div><div class="dh">Motivation</div>
+    <div class="dsub">Why monitor input features instead of waiting for labels.</div></div>
+</section>
+
+<!-- 12 · WHY FEATURE MONITORING -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">02</span><span>Motivation · the label-delay trap</span></div>
+    <h2 style="margin-top:12px;">Why monitor features, not labels?</h2>
+    <div class="rule"></div>
+    <div class="status">
+      <div class="spanel bad"><div class="sh"><span class="sled r"></span>Supervised monitoring</div>
+        <div class="sb">Waits for <b>ground-truth labels</b> to measure error. In production those labels arrive days, weeks, or months late — so the alarm comes <b>after</b> the damage.<sup class="cite">[15]</sup></div></div>
+      <div class="spanel ok"><div class="sh"><span class="sled g"></span>Feature monitoring</div>
+        <div class="sb">Watches the <b>inputs</b> directly. It needs <b>no labels</b>, so it raises a warning the moment the data shift — a proactive, real-time defense.</div></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">Feature monitoring trades the certainty of labels for <span class="pink">speed</span>. EADD turns that early warning into an actionable diagnosis.</p>
+  </div>
+</section>
+
+<!-- 13 · DIAGNOSTIC GAP (four questions) -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">02</span><span>Motivation · the diagnostic gap</span></div>
+    <h2 style="margin-top:14px;">Four questions a detector should answer</h2>
     <div class="rule"></div>
     <div class="qgrid">
-      <div class="qcard"><span class="ic-lg" style="--icm:url(icons/eye.svg);--icc:#fff"></span><div class="ql">Whether</div><div class="qs">binary alarm</div></div>
+      <div class="qcard"><span class="ic-lg" style="--icm:url(icons/eye.svg);--icc:#fff"></span><div class="ql">Whether</div><div class="qs">drift occurred</div></div>
       <div class="qcard"><span class="ic-lg" style="--icm:url(icons/clock.svg);--icc:#fff"></span><div class="ql">When</div><div class="qs">detection delay</div></div>
       <div class="qcard hi"><span class="ic-lg" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="ql">Which</div><div class="qs">feature attribution</div></div>
       <div class="qcard hi"><span class="ic-lg" style="--icm:url(icons/scale.svg)"></span><div class="ql">How severe</div><div class="qs">severity index</div></div>
     </div>
-    <p class="lead" style="margin-top:26px;">Prior unsupervised streaming detectors stop at <b>whether</b>. EADD answers all four.</p>
+    <p class="lead" style="margin-top:26px;">Prior unsupervised streaming detectors answer only the first question. <span class="pink">EADD answers all four</span> in one pass.</p>
   </div>
 </section>
 
-<!-- 8 · DIVIDER 02 -->
+<!-- ============================ PART 03 · HISTORY ============================ -->
+
+<!-- 14 · DIVIDER 03 -->
 <section data-background-color="#000000">
-  <div class="divider pad"><div class="ghost">02</div>
-    <div class="secno">Act 02</div><div class="dh">Background</div>
-    <div class="dsub">Drift, the discriminative paradigm, and where D3 stops.</div></div>
+  <div class="divider pad"><div class="ghost">03</div>
+    <div class="secno">Part 03</div><div class="dh">History</div>
+    <div class="dsub">From cumulative-sum charts to attribution-aware AI governance.</div></div>
 </section>
 
-<!-- 9 · WHAT IS DRIFT (taxonomy) -->
+<!-- 15 · TIMELINE -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">02</span><span>Taxonomy</span></div>
-    <h2 style="margin-top:14px;">Four temporal drift patterns</h2>
+    <div class="kicker"><span class="n">03</span><span>History · seven decades</span></div>
+    <h2 style="margin-top:12px;">How drift detection evolved</h2>
     <div class="rule"></div>
-    <div class="cols" style="grid-template-columns:repeat(4,1fr);gap:22px;">
-      <div class="box tight"><div class="box-tag">Abrupt</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,55 80,55 80,18 180,18" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">instant +2σ shift</p></div>
-      <div class="box tight"><div class="box-tag">Gradual</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,55 70,55 130,18 180,18" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">old↔new blend</p></div>
-      <div class="box tight"><div class="box-tag">Incremental</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,58 36,50 72,42 108,32 144,22 180,14" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">small steps 0.1σ</p></div>
-      <div class="box tight"><div class="box-tag">Recurring</div><svg viewBox="0 0 180 70" class="mini"><polyline points="0,50 45,18 90,50 135,18 180,50" fill="none" stroke="#FF0080" stroke-width="3"/></svg><p class="src">oscillating</p></div>
+    <div class="timeline">
+      <div class="rail"></div>
+      <div class="tline">
+        <div class="tnode"><div class="dot"></div><div class="yr">1954–85</div><div class="tt">Foundations</div><div class="td">CUSUM change-point tests<sup class="cite">[19]</sup> and reservoir sampling<sup class="cite">[8]</sup> set the statistical groundwork.</div></div>
+        <div class="tnode"><div class="dot"></div><div class="yr">2004</div><div class="tt">Error monitoring</div><div class="td">DDM<sup class="cite">[15]</sup> watches the model's error rate — the supervised paradigm.</div></div>
+        <div class="tnode"><div class="dot"></div><div class="yr">2007–15</div><div class="tt">Windows &amp; tests</div><div class="td">ADWIN<sup class="cite">[16]</sup> and KS / MMD<sup class="cite">[17][18]</sup> compare reference and current windows without labels.</div></div>
+        <div class="tnode"><div class="dot"></div><div class="yr">2017–19</div><div class="tt">Discriminative</div><div class="td">The classifier two-sample test<sup class="cite">[3]</sup> and D3<sup class="cite">[1]</sup> recast drift as a classification problem.</div></div>
+        <div class="tnode"><div class="dot"></div><div class="yr">2024–26</div><div class="tt">Attribution era</div><div class="td">Governance demands <em>which</em> and <em>why</em>: TRIPODD<sup class="cite">[13]</sup>, E-C2ST<sup class="cite">[22]</sup>, HDPD<sup class="cite">[14]</sup>.</div></div>
+      </div>
     </div>
-    <div class="cols c-2" style="margin-top:22px;gap:30px;">
-      <div class="defcard"><div class="dt">Covariate drift</div><div class="dd">The <b>inputs</b> P(x) change — what EADD detects, label-free.</div></div>
-      <div class="defcard"><div class="dt">Concept drift</div><div class="dd">The <b>input→output</b> rule P(y|x) changes — needs labels to see directly.</div></div>
-    </div>
-    <p class="lead" style="margin-top:18px;font-size:22px;">Linear detectors catch abrupt shifts but <span class="pink">miss gradual & incremental</span> — where non-linear models win.</p>
+    <p class="lead" style="margin-top:34px;font-size:22px;">The arc runs from reactive error monitoring toward proactive, <span class="pink">feature-attributed</span> distribution analysis — the gap EADD fills.</p>
   </div>
 </section>
 
-<!-- 10 · METHOD LANDSCAPE -->
+<!-- 16 · METHOD FAMILIES -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">02</span><span>The landscape</span></div>
-    <h2 style="margin-top:14px;">How detectors are built</h2>
+    <div class="kicker"><span class="n">03</span><span>History · method families</span></div>
+    <h2 style="margin-top:14px;">A taxonomy of drift-detection methods</h2>
     <div class="rule"></div>
     <table class="caps">
-      <thead><tr><th>Family</th><th>Idea</th><th>Labels?</th><th>Which feature?</th></tr></thead>
+      <thead><tr><th>Method family</th><th>Core idea</th><th>Needs labels?</th><th>Names the feature?</th></tr></thead>
       <tbody>
-        <tr><td>Supervised (DDM/EDDM)</td><td>watch error rate</td><td class="neg">needs labels</td><td class="neg">no</td></tr>
-        <tr><td>Statistical (KS / MMD)</td><td>compare distributions</td><td class="pos">no</td><td class="warn">partial</td></tr>
-        <tr><td>Discriminative (D3)</td><td>classify ref vs current</td><td class="pos">no</td><td class="neg">no</td></tr>
-        <tr class="hl"><td>EADD (this work)</td><td>discriminative + attribution + severity</td><td class="pos">no</td><td class="pos">yes</td></tr>
+        <tr><td>Supervised (DDM, EDDM)</td><td>Monitor the model's error rate<sup class="cite">[15]</sup></td><td class="neg">Yes</td><td class="neg">No</td></tr>
+        <tr><td>Statistical (KS, MMD)</td><td>Compare two distributions, per feature<sup class="cite">[17][18]</sup></td><td class="pos">No</td><td class="warn">Partly</td></tr>
+        <tr><td>Discriminative (D3)</td><td>Classify reference vs. current<sup class="cite">[1]</sup></td><td class="pos">No</td><td class="neg">No</td></tr>
+        <tr class="hl"><td>EADD (this work)</td><td>Discriminative, with attribution and severity</td><td class="pos">No</td><td class="pos">Yes</td></tr>
       </tbody>
     </table>
-    <p class="src" style="margin-top:18px;"><span class="k">src</span> Lit. review, thesis Ch. 2 · D3 <span class="cite">1</span> · benchmark <span class="cite">2</span></p>
+    <p class="lead" style="margin-top:20px;font-size:21px;">Statistical tests check each feature alone, so they miss joint shifts and raise false alarms in high dimensions. The <span class="pink">discriminative</span> approach tests all features together in a single check.</p>
   </div>
 </section>
 
-<!-- 11 · DISCRIMINATIVE PARADIGM -->
+<!-- ============================ PART 04 · RELATED WORK ============================ -->
+
+<!-- 17 · DIVIDER 04 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">04</div>
+    <div class="secno">Part 04</div><div class="dh">Related Work</div>
+    <div class="dsub">The discriminative idea, the leading detectors, and industry practice.</div></div>
+</section>
+
+<!-- 18 · DISCRIMINATIVE / C2ST -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">02</span><span>The discriminative paradigm</span></div>
-    <h2 style="margin-top:14px;">Drift = a classification problem</h2>
+    <div class="kicker"><span class="n">04</span><span>Related work · the key idea</span></div>
+    <h2 style="margin-top:14px;">Drift detection as a classification problem</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="c2st"></div>
       <div>
         <div class="defcard"><div class="dt">C2ST · Classifier Two-Sample Test <sup class="cite" style="color:var(--faint)">[3]</sup></div>
-          <div class="dd">Train a classifier to tell <em>reference</em> from <em>current</em> data. If it succeeds (<b>AUC</b> ≫ 0.5), the two distributions differ → drift.</div></div>
+          <div class="dd">Train a classifier to tell <em>reference</em> data from <em>current</em> data. If it succeeds (<b>AUC</b> well above 0.5), the two distributions differ — that is drift.</div></div>
         <div class="defcard" style="margin-top:12px;"><div class="dt">AUC</div>
-          <div class="dd">Area under the ROC curve — separability. <b>0.5</b> = indistinguishable, <b>1.0</b> = perfectly separable.</div></div>
-        <p class="lead" style="margin-top:16px;font-size:21px;"><b>D3</b><sup class="cite">[1]</sup> brought C2ST to streams; ranked the <span class="pink">most robust</span> unsupervised detector<sup class="cite">[2]</sup> — but is <b>linear</b>, <b>fixed-threshold</b>, and <span class="pink">discards the model</span>.</p>
+          <div class="dd">A measure of separability. <b>0.5</b> means the two are indistinguishable; <b>1.0</b> means perfectly separable.</div></div>
+        <p class="lead" style="margin-top:16px;font-size:20px;"><b>D3</b><sup class="cite">[1]</sup> adapted the C2ST to data streams and was ranked the <span class="pink">most robust</span> unsupervised detector in a recent benchmark<sup class="cite">[2]</sup>.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 12 · D3 GAPS -->
+<!-- 19 · SEVEN DETECTORS -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">02</span><span>Research gap</span></div>
-    <h2 style="margin-top:14px;">Three gaps in D3</h2>
+    <div class="kicker"><span class="n">04</span><span>Related work · the benchmark field</span></div>
+    <h2 style="margin-top:12px;">Seven unsupervised detectors, one reality check</h2>
     <div class="rule"></div>
-    <div class="cols c-3">
-      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">1</div><h3 style="margin:8px 0;">No significance test</h3><p class="src" style="font-size:16px;line-height:1.5;">Fixed AUC=0.7 → false-alarm storms on autocorrelated data.<sup class="cite">[1]</sup></p></div>
-      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">2</div><h3 style="margin:8px 0;">No attribution</h3><p class="src" style="font-size:16px;line-height:1.5;">“Detect-and-discard” — never says <em>which</em> feature drifted. Prior attempts are supervised or batch-only.<sup class="cite">[1][13][14]</sup></p></div>
-      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">3</div><h3 style="margin:8px 0;">Linear only</h3><p class="src" style="font-size:16px;line-height:1.5;">Misses non-linear, gradual & incremental drift.<sup class="cite">[1][2]</sup></p></div>
+    <div class="dgrid">
+      <div class="dcard win"><div class="dnm">D3</div><div class="ddesc">Discriminative classifier; benchmark winner — but a black box.<sup class="cite">[1]</sup></div></div>
+      <div class="dcard"><div class="dnm">CSDDM</div><div class="ddesc">Clustering + statistical tests; few false alarms.</div></div>
+      <div class="dcard"><div class="dnm">IBDD</div><div class="ddesc">Turns data into images; accurate but reset-biased.</div></div>
+      <div class="dcard"><div class="dnm">OCDD</div><div class="ddesc">One-class SVM boundary; D3 usually beats it.</div></div>
+      <div class="dcard"><div class="dnm">SPLL</div><div class="ddesc">Log-likelihood model; strong on sudden drift.</div></div>
+      <div class="dcard"><div class="dnm">BNDM</div><div class="ddesc">Bayesian non-parametric; struggles on small windows.</div></div>
+      <div class="dcard"><div class="dnm">UDetect</div><div class="ddesc">Control-chart on variance; failed 45% of scenarios.</div></div>
+      <div class="dcard"><div class="dnm" style="color:var(--faint)">…and more</div><div class="ddesc">A 2024 survey<sup class="cite">[2]</sup> showed label-free detection is possible but fragile.</div></div>
     </div>
-    <p class="lead" style="margin-top:24px;color:var(--white);">No prior work integrates <b>significance + attribution + severity</b> in one unsupervised streaming pipeline.</p>
+    <p class="lead" style="margin-top:22px;font-size:21px;">All of them answer only <em>whether</em> drift happened. None reports <span class="pink">which feature</span> caused it.</p>
   </div>
 </section>
 
-<!-- 13 · DIVIDER 03 -->
-<section data-background-color="#000000">
-  <div class="divider pad"><div class="ghost">03</div>
-    <div class="secno">Act 03</div><div class="dh">EADD</div>
-    <div class="dsub">Enhanced Adversarial Drift Detection — the method.</div></div>
-</section>
-
-<!-- 14 · PIPELINE -->
+<!-- 20 · INDUSTRIAL / ATTRIBUTION WORK -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>The pipeline</span></div>
-    <h2 style="margin-top:12px;">Four steps, two gates</h2>
+    <div class="kicker"><span class="n">04</span><span>Related work · industry &amp; attribution</span></div>
+    <h2 style="margin-top:14px;">Closer, but still incomplete</h2>
+    <div class="rule"></div>
+    <div class="cols c-2" style="gap:24px;">
+      <div class="box"><div class="box-tag">Cloud platforms</div>
+        <p class="lead" style="margin-top:8px;font-size:20px;">Vertex AI<sup class="cite">[20]</sup> and SageMaker Clarify<sup class="cite">[21]</sup> monitor feature attributions — but in <b>batch</b> or <b>supervised</b> settings, not real-time streaming.</p></div>
+      <div class="box"><div class="box-tag">Recent research</div>
+        <p class="lead" style="margin-top:8px;font-size:20px;">TRIPODD<sup class="cite">[13]</sup> tests feature interactions but needs them pre-specified; HDPD<sup class="cite">[14]</sup> attributes performance but needs labels and runs post-hoc.</p></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">No single framework integrates <b>rigorous detection</b>, <span class="pink">feature attribution</span>, and <span class="pink">severity</span> in an unsupervised streaming pipeline. That is the opening for EADD.</p>
+  </div>
+</section>
+
+<!-- ============================ PART 05 · PROBLEM ============================ -->
+
+<!-- 21 · DIVIDER 05 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">05</div>
+    <div class="secno">Part 05</div><div class="dh">The Problem</div>
+    <div class="dsub">Why a binary "drift detected" alarm is not enough.</div></div>
+</section>
+
+<!-- 22 · DETECT-AND-DISCARD -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">05</span><span>Problem · detect-and-discard</span></div>
+    <h2 style="margin-top:12px;">D3 throws away its most valuable asset</h2>
+    <div class="rule"></div>
+    <div class="discard">
+      <div class="dbox">Windows<div class="sub">reference vs. current</div></div>
+      <span class="darr">→</span>
+      <div class="dbox keep">Classifier<div class="sub">learns what changed</div></div>
+      <span class="darr">→</span>
+      <div class="dbox">AUC score<div class="sub">a single number</div></div>
+      <span class="darr">→</span>
+      <div class="dbox trash">Discard ✕<div class="sub">model deleted</div></div>
+    </div>
+    <p class="lead" style="margin-top:30px;">D3 trains a classifier that <b>knows exactly which features separate the windows</b> — then discards it after reading one AUC number.<sup class="cite">[1]</sup> The diagnosis was in hand, and thrown away.</p>
+    <p class="lead pink" style="margin-top:10px;font-weight:600;font-size:23px;">EADD's central insight: keep the classifier and read its explanation.</p>
+  </div>
+</section>
+
+<!-- 23 · THREE GAPS -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">05</span><span>Problem · the research gap</span></div>
+    <h2 style="margin-top:14px;">Three limitations of D3</h2>
+    <div class="rule"></div>
+    <div class="cols c-3">
+      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">1</div><h3 style="margin:8px 0;">No significance test</h3><p class="src" style="font-size:16px;line-height:1.5;">A fixed AUC threshold of 0.7 produces frequent false alarms on autocorrelated data.<sup class="cite">[1]</sup></p></div>
+      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">2</div><h3 style="margin:8px 0;">No attribution</h3><p class="src" style="font-size:16px;line-height:1.5;">It detects and discards, so it never reports <em>which</em> feature changed. Prior attribution methods are supervised or batch-only.<sup class="cite">[1][13][14]</sup></p></div>
+      <div class="box"><div class="num pink" style="font-family:var(--epi);font-weight:800;font-size:40px;">3</div><h3 style="margin:8px 0;">Linear only</h3><p class="src" style="font-size:16px;line-height:1.5;">A linear classifier misses non-linear, gradual, and incremental drift.<sup class="cite">[1][2]</sup></p></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">No prior work integrates <b>significance testing, feature attribution, and severity</b> in a single unsupervised streaming pipeline.</p>
+  </div>
+</section>
+
+<!-- 24 · FORMAL PROBLEM -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">05</span><span>Problem · formal statement</span></div>
+    <h2 style="margin-top:14px;">The task, stated precisely</h2>
+    <div class="rule"></div>
+    <div class="cols c-55">
+      <div class="box eq big">
+        <p class="formal" style="margin:0;">Given a stream <span class="ff">{xₜ}</span>, <b>xₜ ∈ ℝᵈ</b><br><br>
+        Reference window <span class="ff">W_ref ~ P₀(X)</span><br>
+        Current window <span class="ff">W_cur ~ Pₜ(X)</span><br><br>
+        <b>H₀:</b> &nbsp;Pₜ(X) = P₀(X) &nbsp;(no drift)<br>
+        <b>Goal:</b> reject H₀ early, name the<br>drifted features, and score severity.</p>
+      </div>
+      <div>
+        <p class="lead">Drift detection is a <b>streaming two-sample test</b>: decide, on the fly, whether recent inputs still come from the same distribution as the reference.<sup class="cite">[3]</sup></p>
+        <p class="lead" style="margin-top:14px;">A useful detector must do three things at once — confirm the change is <span class="pink">real</span>, identify <span class="pink">which</span> features moved, and quantify <span class="pink">how severe</span> it is.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PART 06 · CONTRIBUTIONS ============================ -->
+
+<!-- 25 · DIVIDER 06 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">06</div>
+    <div class="secno">Part 06</div><div class="dh">Contributions</div>
+    <div class="dsub">Three methodological advances, one unified pipeline.</div></div>
+</section>
+
+<!-- 26 · CONTRIBUTIONS OVERVIEW -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">06</span><span>Contributions · overview</span></div>
+    <h2 style="margin-top:14px;">Three contributions</h2>
+    <div class="rule"></div>
+    <div class="cols c-3">
+      <div class="box"><span class="contrib-ic" style="--icm:url(icons/bolt.svg)"></span><div class="box-tag">Contribution 1</div><h3 style="margin:10px 0;">ASPT and H_pred</h3>
+        <p class="src" style="font-size:16px;line-height:1.55;">An adaptive permutation test that uses <b>90–95% fewer</b> permutations while controlling the Type-I error, plus a continuous entropy signal.</p></div>
+      <div class="box" style="border-color:var(--pink);"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">Contribution 2</div><h3 style="margin:10px 0;">SHAP and DSI</h3>
+        <p class="src" style="font-size:16px;line-height:1.55;">TreeSHAP feature localisation (<em>which features</em>) and a Drift Severity Index (<em>how severe</em>).</p></div>
+      <div class="box"><span class="contrib-ic" style="--icm:url(icons/chart-bar.svg)"></span><div class="box-tag">Contribution 3</div><h3 style="margin:10px 0;">Benchmark</h3>
+        <p class="src" style="font-size:16px;line-height:1.55;">A comparison of EADD with seven detectors on four synthetic and thirteen real-world streams.</p></div>
+    </div>
+    <p class="src" style="margin-top:20px;"><span class="k">Note</span> A non-linear LightGBM classifier with reservoir sampling is the design choice that enables all three.</p>
+  </div>
+</section>
+
+<!-- 27 · CONTRIBUTION 1 DEEP DIVE -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">06</span><span>Contributions · 1 in depth</span></div>
+    <h2 style="margin-top:12px;">Breaking the permutation-cost barrier</h2>
+    <div class="rule"></div>
+    <div class="cols c-55">
+      <div>
+        <div class="defcard"><div class="dt">The problem</div><div class="dd">A permutation test confirms significance by reshuffling labels many times. The classic version runs a <b>fixed, large budget</b> every time — too slow for streaming.</div></div>
+        <div class="defcard" style="margin-top:12px;"><div class="dt">The idea · ASPT <sup class="cite" style="color:var(--faint)">[4]</sup></div><div class="dd">Watch evidence accumulate and <b>stop early</b> the moment the result is decisive, while keeping the Type-I error at the nominal level.</div></div>
+        <div class="defcard" style="margin-top:12px;"><div class="dt">Bonus · H_pred <sup class="cite" style="color:var(--faint)">[9]</sup></div><div class="dd">Prediction entropy gives a continuous early-warning trend on <b>every</b> step — even before the AUC gate trips.</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="stat"><div class="num" style="font-size:96px;color:var(--pink)">90–95%</div><div class="tick"></div><div class="cap">fewer permutations<br>vs. a fixed budget</div></div>
+        <p class="lead" style="margin-top:24px;">Under α = 0.05, a decisive rejection needs only 20 permutations — every confirmed detection in our experiments stopped at exactly <b>20</b>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 28 · CONTRIBUTION 2 DEEP DIVE -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">06</span><span>Contributions · 2 in depth</span></div>
+    <h2 style="margin-top:12px;">From a binary alarm to a prescription</h2>
+    <div class="rule"></div>
+    <div class="cols c-2" style="gap:26px;">
+      <div class="box"><div class="box-tag">Localisation · SHAP</div>
+        <p class="lead" style="margin-top:8px;font-size:20px;">TreeSHAP reads the retained classifier and ranks features by <b>contribution</b><sup class="cite">[6][7]</sup>. The top feature is the one that drove the drift — an answer to <span class="pink">which</span>.</p></div>
+      <div class="box" style="border-color:var(--pink);"><div class="box-tag">Severity · DSI</div>
+        <p class="lead" style="margin-top:8px;font-size:20px;">The Drift Severity Index folds detection confidence and attribution concentration into one score from 0 to 1 — an answer to <span class="pink">how severe</span>.</p></div>
+    </div>
+    <p class="lead" style="margin-top:24px;color:var(--white);">Together they turn a detector into a <span class="pink">diagnostic tool</span>: an alert that says not just "something changed" but "feature F3 changed, and here is how much."</p>
+  </div>
+</section>
+
+<!-- ============================ PART 07 · METHOD ============================ -->
+
+<!-- 29 · DIVIDER 07 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">07</div>
+    <div class="secno">Part 07</div><div class="dh">The EADD Method</div>
+    <div class="dsub">Four steps, two decision gates, one streaming pipeline.</div></div>
+</section>
+
+<!-- 30 · PIPELINE -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">07</span><span>Method · overview</span></div>
+    <h2 style="margin-top:12px;">The EADD pipeline at a glance</h2>
     <div class="rule"></div>
     <div class="pipeline">
       <div class="pstep"><span class="pn">Stream</span><span class="pt">{xₜ} ∈ ℝᵈ</span></div>
@@ -224,7 +468,7 @@
       <span class="parrow">→</span>
       <div class="pgate">AUC&gt;τ?</div>
       <span class="parrow">→</span>
-      <div class="pstep s3"><span class="pn">③ ASPT</span><span class="pt">perm. test</span></div>
+      <div class="pstep s3"><span class="pn">③ ASPT</span><span class="pt">significance test</span></div>
       <span class="parrow">→</span>
       <div class="pgate">p&lt;α?</div>
       <span class="parrow">→</span>
@@ -232,101 +476,98 @@
       <span class="parrow">→</span>
       <div class="palert"><span class="pn">DRIFT ALERT</span><span class="pt">+ features + severity</span></div>
     </div>
-    <p class="lead" style="margin-top:30px;">Two-stage gate ⇒ Type-I error bound: <span class="pink">Pr(AUC&gt;τ | H₀)·α ≤ α</span>. Non-linear LightGBM broadens coverage; the model is <b>kept</b>, not discarded.</p>
+    <p class="lead" style="margin-top:30px;">The two-stage gate bounds the Type-I error: <span class="pink">Pr(AUC&gt;τ | H₀)·α ≤ α</span>. A non-linear classifier broadens coverage, and the trained model is <b>retained</b> rather than discarded.</p>
   </div>
 </section>
 
-<!-- 15 · CONTRIBUTIONS -->
+<!-- 31 · STEP 1 WINDOWING -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Contributions</span></div>
-    <h2 style="margin-top:14px;">Six objectives → three contributions</h2>
-    <div class="rule"></div>
-    <div class="cols c-3">
-      <div class="box"><span class="contrib-ic" style="--icm:url(icons/bolt.svg)"></span><div class="box-tag">Contribution 1</div><h3 style="margin:10px 0;">ASPT + H_pred</h3>
-        <p class="src" style="font-size:16px;line-height:1.55;">Adaptive permutation test (<b>90–95% fewer</b> perms, Type-I controlled) + continuous entropy signal.</p></div>
-      <div class="box" style="border-color:var(--pink);"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">Contribution 2</div><h3 style="margin:10px 0;">SHAP + DSI</h3>
-        <p class="src" style="font-size:16px;line-height:1.55;">TreeSHAP localisation (<em>which</em>) + Drift Severity Index (<em>how severe</em>).</p></div>
-      <div class="box"><span class="contrib-ic" style="--icm:url(icons/chart-bar.svg)"></span><div class="box-tag">Contribution 3</div><h3 style="margin:10px 0;">Benchmark</h3>
-        <p class="src" style="font-size:16px;line-height:1.55;">EADD vs 7 detectors on 4 synthetic + 13 real-world streams.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- 16 · STEP1 windowing -->
-<section>
-  <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Step 1 · design choice</span></div>
-    <h2 style="margin-top:14px;">Reservoir windows + non-linear C2ST</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · step 1</span></div>
+    <h2 style="margin-top:14px;">Step 1 — Representative windows</h2>
     <div class="rule"></div>
     <div class="cols c-2">
-      <div class="box"><div class="box-tag">Reservoir reference</div><p class="lead" style="margin-top:10px;">Reservoir sampling<sup class="cite">8</sup> keeps a representative reference window over the whole stream — not just the last block.</p></div>
-      <div class="box"><div class="box-tag">LightGBM detector</div><p class="lead" style="margin-top:10px;">A non-linear gradient-boosted classifier<sup class="cite">5</sup> captures interactions a linear D3 misses → broader coverage.</p></div>
+      <div class="box"><div class="box-tag">Reference window · reservoir sampling</div><p class="lead" style="margin-top:10px;font-size:21px;">Reservoir sampling<sup class="cite">[8]</sup> keeps an <b>unbiased snapshot of the whole stream</b>, not just the most recent block — so the baseline does not drift along with the data.</p></div>
+      <div class="box"><div class="box-tag">Current window · sliding</div><p class="lead" style="margin-top:10px;font-size:21px;">A standard sliding buffer holds the <b>most recent observations</b>. We compare it against the reference every M = 50 samples.</p></div>
     </div>
-    <p class="src" style="margin-top:20px;"><span class="k">why</span> enables all three contributions; coverage 4/4 vs D3’s 2/4 comes from here.</p>
+    <p class="lead" style="margin-top:22px;font-size:21px;">A stable reference is what lets a single classifier ask one clean question: <span class="pink">"are these two windows from the same distribution?"</span></p>
   </div>
 </section>
 
-<!-- 17 · H_pred -->
+<!-- 32 · STEP 2 LIGHTGBM -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Contribution 1a</span></div>
-    <h2 style="margin-top:14px;">Prediction entropy H_pred</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · step 2</span></div>
+    <h2 style="margin-top:14px;">Step 2 — A non-linear discriminator</h2>
+    <div class="rule"></div>
+    <div class="cols c-2">
+      <div class="box"><div class="box-tag">Why LightGBM</div><p class="lead" style="margin-top:10px;font-size:21px;">D3 uses a linear model and misses curved, gradual, and incremental shifts. LightGBM<sup class="cite">[5]</sup> captures <b>non-linear feature interactions</b>, broadening coverage from 2/4 to 4/4 drift types.</p></div>
+      <div class="box"><div class="box-tag">How it scores drift</div><p class="lead" style="margin-top:10px;font-size:21px;">Label reference data 0 and current data 1, train, and read the cross-validated <b>AUC</b><sup class="cite">[3]</sup>. AUC ≈ 0.5 means no drift; AUC above τ means the windows are separable.</p></div>
+    </div>
+    <p class="src" style="margin-top:20px;"><span class="k">Note</span> The coverage advantage originates here; later steps add rigor, attribution, and severity on top.</p>
+  </div>
+</section>
+
+<!-- 33 · H_PRED -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">07</span><span>Method · step 2b</span></div>
+    <h2 style="margin-top:14px;">Prediction entropy (H_pred)</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="entropyDrop"></div>
       <div>
         <div class="defcard"><div class="dt">Entropy <sup class="cite" style="color:var(--faint)">[9]</sup></div>
-          <div class="dd">A measure of <b>uncertainty</b>. High = the classifier is unsure (no drift); low = it is confident it can separate them (drift building).</div></div>
+          <div class="dd">A measure of <b>uncertainty</b>. High entropy means the classifier is unsure (no drift); low entropy means it is confident it can separate the two windows (drift is building).</div></div>
         <div class="box eq" style="margin-top:14px;"><div style="font-family:var(--epi);font-size:26px;color:#fff;">H_pred = −Σ pᵢ log₂ pᵢ</div></div>
-        <p class="lead" style="margin-top:14px;font-size:21px;">An early-warning signal on <b>every</b> step — even before AUC crosses the threshold.</p>
+        <p class="lead" style="margin-top:14px;font-size:20px;">H_pred provides an early-warning signal at every monitoring step, even before the AUC crosses the detection threshold.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 18 · ASPT -->
+<!-- 34 · ASPT -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Contribution 1b</span></div>
-    <h2 style="margin-top:12px;">ASPT — stop permuting once it’s decisive</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · step 3</span></div>
+    <h2 style="margin-top:12px;">Step 3 — Adaptive Sequential Permutation Test</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="asptDemo"></div>
       <div>
         <div class="defcard"><div class="dt">Permutation test</div>
-          <div class="dd">Shuffle the ref/current labels many times. If the real split is rarely beaten by chance, the drift is <b>statistically significant</b>.</div></div>
-        <div class="defcard" style="margin-top:12px;"><div class="dt">ASPT · adaptive early stop <sup class="cite" style="color:var(--faint)">[4]</sup></div>
-          <div class="dd">Stop as soon as the evidence is decisive — instead of always running all 199.</div></div>
-        <p class="lead pink" style="margin-top:16px;font-weight:600;font-size:24px;">90–95% fewer permutations · Type-I error preserved</p>
+          <div class="dd">Repeatedly shuffle the reference/current labels. If the observed separation is rarely matched by chance, the drift is <b>statistically significant</b>.</div></div>
+        <div class="defcard" style="margin-top:12px;"><div class="dt">ASPT · adaptive early stopping <sup class="cite" style="color:var(--faint)">[4]</sup></div>
+          <div class="dd">Stop as soon as the evidence is decisive, rather than always running the full budget of 199 permutations.</div></div>
+        <p class="lead pink" style="margin-top:16px;font-weight:600;font-size:23px;">90–95% fewer permutations, with the Type-I error preserved.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 19 · SHAP -->
+<!-- 35 · SHAP -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Contribution 2a</span></div>
-    <h2 style="margin-top:14px;">SHAP localisation — which features?</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · step 4a</span></div>
+    <h2 style="margin-top:14px;">Step 4 — Feature localisation with SHAP</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="shapFeat"></div>
       <div>
         <div class="defcard"><div class="dt">SHAP <sup class="cite" style="color:var(--faint)">[6][7]</sup></div>
-          <div class="dd">Splits the model's decision into each feature's <b>contribution</b>. The biggest share = the feature that drove the drift.</div></div>
-        <p class="lead" style="margin-top:16px;font-size:21px;">D3 throws its classifier away. EADD <b>keeps</b> it and reads the explanation — a detector becomes a <span class="pink">diagnostic</span>.</p>
-        <p class="src" style="margin-top:12px;">In the test case the true feature <b class="pink">F3</b> is ranked #1 — P@k = R@k = 1.0.</p>
+          <div class="dd">SHAP decomposes the model's decision into each feature's <b>contribution</b>. The feature with the largest share is the one that drove the drift.</div></div>
+        <p class="lead" style="margin-top:16px;font-size:20px;">D3 discards its classifier; EADD <b>retains</b> it and reads its explanation, turning a detector into a <span class="pink">diagnostic tool</span>.</p>
+        <p class="src" style="margin-top:12px;">In the controlled test, the true feature <b class="pink">F3</b> is ranked first (P@k = R@k = 1.0).</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 20 · DSI -->
+<!-- 36 · DSI -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Contribution 2b</span></div>
-    <h2 style="margin-top:12px;">Drift Severity Index</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · step 4b</span></div>
+    <h2 style="margin-top:12px;">Step 4 — Drift Severity Index (DSI)</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div>
@@ -335,144 +576,187 @@
       </div>
       <div>
         <div class="defcard"><div class="dt">DSI · Drift Severity Index</div>
-          <div class="dd">Combines <b>how sure</b> we are (AUC) with <b>how concentrated</b> the blame is (low SHAP entropy). One score, 0 → 1.</div></div>
+          <div class="dd">The DSI combines detection confidence (AUC) with how concentrated the attribution is (low SHAP entropy), giving a single score from 0 to 1.</div></div>
         <table class="tiers2" style="margin-top:14px;">
-          <tr><td class="pos">Low &lt;0.3</td><td>diffuse → scheduled retrain</td></tr>
-          <tr><td class="warn">Moderate 0.3–0.6</td><td>subset → audit shared source</td></tr>
-          <tr><td class="neg">Critical &gt;0.6</td><td>concentrated → audit pipeline</td></tr>
+          <tr><td class="pos">Low &lt; 0.3</td><td>Diffuse change — schedule a retrain</td></tr>
+          <tr><td class="warn">Moderate 0.3–0.6</td><td>A subset of features — audit the shared source</td></tr>
+          <tr><td class="neg">Critical &gt; 0.6</td><td>Concentrated — audit the feature pipeline</td></tr>
         </table>
-        <p class="src" style="margin-top:8px;">heuristic tiers; require domain calibration.</p>
+        <p class="src" style="margin-top:8px;">Tier boundaries are heuristic and require domain calibration.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 20b · LIVE DETECTOR DEMO -->
+<!-- 37 · LIVE DEMO -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">03</span><span>Try it live</span></div>
-    <h2 style="margin-top:12px;">Shift the distribution → watch it fire</h2>
+    <div class="kicker"><span class="n">07</span><span>Method · interactive demonstration</span></div>
+    <h2 style="margin-top:12px;">Detecting drift in real time</h2>
     <div class="rule"></div>
     <div class="viz" data-viz="live"></div>
-    <p class="lead" style="margin-top:10px;font-size:22px;">Drag: as <span class="pink">current</span> separates from <em>reference</em>, the C2ST AUC climbs — the alarm trips at <b>AUC &gt; 0.7</b>.</p>
+    <p class="lead" style="margin-top:10px;font-size:21px;">Drag the slider to shift the <span class="pink">current</span> distribution. As it separates from the <em>reference</em>, the classifier's AUC rises, and the alarm triggers once AUC exceeds <b>0.7</b>.</p>
   </div>
 </section>
 
-<!-- 21 · DIVIDER 04 -->
+<!-- ============================ PART 08 · EXPERIMENTS ============================ -->
+
+<!-- 38 · DIVIDER 08 -->
 <section data-background-color="#000000">
-  <div class="divider pad"><div class="ghost">04</div>
-    <div class="secno">Act 04</div><div class="dh">Evidence</div>
-    <div class="dsub">Four experiments · eight detectors · real numbers.</div></div>
+  <div class="divider pad"><div class="ghost">08</div>
+    <div class="secno">Part 08</div><div class="dh">Experiments</div>
+    <div class="dsub">How we set up a fair comparison against seven detectors.</div></div>
 </section>
 
-<!-- 22 · SETUP -->
+<!-- 39 · SETUP -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04</span><span>Setup</span></div>
-    <h2 style="margin-top:14px;">Datasets, baselines, config</h2>
+    <div class="kicker"><span class="n">08</span><span>Experiments · design</span></div>
+    <h2 style="margin-top:14px;">Experimental design</h2>
     <div class="rule"></div>
     <div class="cols c-3">
-      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/squares-2x2.svg)"></span><div class="box-tag">Synthetic</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">4 drift types + 4 stable streams · n=5–10k, d=5</p></div>
-      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/signal.svg)"></span><div class="box-tag">Real-world</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">13 streams (Lukats 2024)<sup class="cite">[2]</sup> · 4 annotated INSECTS<sup class="cite">[11]</sup></p></div>
-      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">SHAP</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">n=10k, d=10 · drift @ t=5000 · uni/subset/multi</p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/squares-2x2.svg)"></span><div class="box-tag">Experiment 1 · synthetic</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">Four drift types and four stable streams · n = 5k, d = 5 · coverage and false alarms</p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/signal.svg)"></span><div class="box-tag">Experiment 2 · real-world</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">Thirteen streams<sup class="cite">[2]</sup> · four annotated INSECTS sets<sup class="cite">[11]</sup> · recall and detection delay</p></div>
+      <div class="box tight"><span class="contrib-ic" style="--icm:url(icons/magnifying-glass.svg)"></span><div class="box-tag">Experiment 3 · attribution</div><p class="src" style="font-size:16px;margin-top:6px;line-height:1.5;">n = 10k, d = 10 · drift at t = 5000 · univariate, subset, multivariate</p></div>
     </div>
-    <div class="box tight" style="margin-top:18px;"><div class="box-tag">Baselines & config</div>
-      <p class="src" style="font-size:15px;margin-top:6px;line-height:1.6;">D3 · BNDM · CSDDM · IBDD · OCDD · SPLL · UDetect &nbsp;|&nbsp; LightGBM 50 trees · N_ref 500 · N_cur 200 · M 50 · B_max 199 · α 0.05 · τ 0.7</p></div>
+    <div class="box tight" style="margin-top:18px;"><div class="box-tag">Baselines and configuration</div>
+      <p class="src" style="font-size:15px;margin-top:6px;line-height:1.6;">D3 · BNDM · CSDDM · IBDD · OCDD · SPLL · UDetect &nbsp;|&nbsp; LightGBM (50 trees) · N_ref = 500 · N_cur = 200 · M = 50 · B_max = 199 · α = 0.05 · τ = 0.7 · fixed seeds across all detectors</p></div>
   </div>
 </section>
 
-<!-- 23 · RQ + HYPOTHESES -->
+<!-- 40 · DATASETS -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04</span><span>Questions</span></div>
-    <h2 style="margin-top:14px;">Research questions & hypotheses</h2>
+    <div class="kicker"><span class="n">08</span><span>Experiments · datasets</span></div>
+    <h2 style="margin-top:12px;">Synthetic control and real-world stress</h2>
+    <div class="rule"></div>
+    <table class="caps small">
+      <thead><tr><th>Dataset</th><th>n</th><th>d</th><th>Drift</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>Temporal Patterns</td><td>5K</td><td>5</td><td>4 types</td><td>Coverage &amp; false alarms</td></tr>
+        <tr><td>Feature Attribution</td><td>10K</td><td>10</td><td>injected at t = 5K</td><td>SHAP accuracy</td></tr>
+        <tr><td>INSECTS Abrupt / Gradual<sup class="cite">[11]</sup></td><td>24–53K</td><td>33</td><td>annotated</td><td>Real-world delay</td></tr>
+        <tr><td>INSECTS IncrAbrupt / IncrRecur<sup class="cite">[11]</sup></td><td>80K</td><td>33</td><td>annotated</td><td>Incremental drift</td></tr>
+        <tr><td>Nine unannotated streams<sup class="cite">[2]</sup></td><td>1.9–100K</td><td>2–72</td><td>none labelled</td><td>Selectivity (count)</td></tr>
+      </tbody>
+    </table>
+    <p class="lead" style="margin-top:18px;font-size:21px;">Synthetic streams isolate <b>one variable at a time</b>; the messy INSECTS benchmark<sup class="cite">[11]</sup> tests whether the method survives <span class="pink">real, evolving data</span>.</p>
+  </div>
+</section>
+
+<!-- 41 · RQ + HYPOTHESES -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">08</span><span>Experiments · questions</span></div>
+    <h2 style="margin-top:14px;">Research questions and hypotheses</h2>
     <div class="rule"></div>
     <div class="cols c-2">
       <div>
-        <div class="box tight"><b class="pink">RQ1</b> &nbsp;Detection accuracy vs SOTA?</div>
-        <div class="box tight" style="margin-top:10px;"><b class="pink">RQ2</b> &nbsp;Does SHAP find the root cause?</div>
-        <div class="box tight" style="margin-top:10px;"><b class="pink">RQ3</b> &nbsp;Fewer false alarms on stable data?</div>
+        <div class="box tight"><b class="pink">RQ1</b> &nbsp;Does EADD match or exceed state-of-the-art detection accuracy?</div>
+        <div class="box tight" style="margin-top:10px;"><b class="pink">RQ2</b> &nbsp;Does SHAP attribution identify the true cause of drift?</div>
+        <div class="box tight" style="margin-top:10px;"><b class="pink">RQ3</b> &nbsp;Does EADD produce fewer false alarms on stable data?</div>
       </div>
       <div>
-        <div class="box tight"><b>H1</b> broader coverage than D3</div>
-        <div class="box tight" style="margin-top:10px;"><b>H2</b> FPR_EADD &lt; FPR_D3 (Mann–Whitney U)</div>
-        <div class="box tight" style="margin-top:10px;"><b>H3</b> top SHAP feature = ground truth</div>
+        <div class="box tight"><b>H1</b> &nbsp;EADD covers more drift types than D3.</div>
+        <div class="box tight" style="margin-top:10px;"><b>H2</b> &nbsp;FPR(EADD) &lt; FPR(D3), by the Mann–Whitney U test.</div>
+        <div class="box tight" style="margin-top:10px;"><b>H3</b> &nbsp;The top SHAP feature matches the ground truth.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 24 · HEADLINE -->
+<!-- ============================ PART 09 · RESULTS ============================ -->
+
+<!-- 42 · DIVIDER 09 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">09</div>
+    <div class="secno">Part 09</div><div class="dh">Results</div>
+    <div class="dsub">The evidence, in numbers and pictures.</div></div>
+</section>
+
+<!-- 43 · HEADLINE -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04</span><span>Headline</span></div>
-    <h2 style="margin-top:14px;">What EADD delivers</h2>
+    <div class="kicker"><span class="n">09</span><span>Results · summary</span></div>
+    <h2 style="margin-top:14px;">Headline results</h2>
     <div class="rule"></div>
     <div class="cols" style="grid-template-columns:repeat(4,1fr);gap:0;">
       <div class="stat" style="padding-right:28px;border-right:1px solid var(--hair-soft);"><div class="num"><span data-count="4" data-dec="0" data-suf="/4">0/4</span></div><div class="tick"></div><div class="cap">synthetic<br>coverage</div></div>
       <div class="stat" style="padding:0 28px;border-right:1px solid var(--hair-soft);"><div class="num"><span data-count="0" data-dec="0">0</span></div><div class="tick"></div><div class="cap">false alarms<br>on stable streams</div></div>
-      <div class="stat" style="padding:0 28px;border-right:1px solid var(--hair-soft);"><div class="num"><span data-count="8" data-dec="0" data-suf="×">0×</span></div><div class="tick"></div><div class="cap">faster MTD vs D3<br>(incremental)</div></div>
+      <div class="stat" style="padding:0 28px;border-right:1px solid var(--hair-soft);"><div class="num"><span data-count="8" data-dec="0" data-suf="×">0×</span></div><div class="tick"></div><div class="cap">faster detection vs. D3<br>(incremental)</div></div>
       <div class="stat" style="padding-left:28px;"><div class="num"><span data-count="1" data-dec="2">0.00</span></div><div class="tick"></div><div class="cap">P@k = R@k<br>(univariate SHAP)</div></div>
     </div>
-    <p class="lead" style="margin-top:36px;">Only detector with <b>full coverage AND zero false alarms</b> — while answering <span class="pink">which</span> and <span class="pink">how severe</span>.</p>
-    <p class="src" style="margin-top:10px;">Mann–Whitney U vs D3 on autocorrelated streams: p = 0.0101 (τ=0.6).</p>
+    <p class="lead" style="margin-top:36px;">EADD is the only detector that achieves <b>full coverage and zero false alarms</b>, while also reporting <span class="pink">which</span> features changed and <span class="pink">how severe</span> the change is.</p>
+    <p class="src" style="margin-top:10px;">Mann–Whitney U test vs. D3 on autocorrelated streams: p = 0.0101 (τ = 0.6).</p>
   </div>
 </section>
 
-<!-- 25 · EXP1 delay -->
+<!-- 44 · COVERAGE vs FA -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 1</span><span>Temporal sensitivity</span></div>
+    <div class="kicker"><span class="n">09</span><span>Results · experiment 1</span></div>
+    <h2 style="margin-top:12px;">Coverage versus false alarms</h2>
+    <div class="rule"></div>
+    <div class="viz" data-viz="chart" data-chart="coverageFA" style="max-width:880px;"></div>
+    <p class="lead" style="margin-top:14px;font-size:21px;">EADD achieves full coverage (4/4) with zero false alarms. BNDM, CSDDM, IBDD, and OCDD also reach 4/4, but at a high false-alarm cost; D3 and SPLL keep zero false alarms only by missing half the drift types.
+      <span class="src">&nbsp; <span class="k">Source</span> Experiment 1 — eight detectors.</span></p>
+  </div>
+</section>
+
+<!-- 45 · DELAY -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">09</span><span>Results · experiment 1</span></div>
     <h2 style="margin-top:12px;">Detection delay across drift types</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="chart" data-chart="delay"></div>
-      <div><p class="lead">EADD detects <b>4/4</b> drift types; D3 detects 2/4 (misses incremental entirely). Comparable delay where both fire.</p>
-        <p class="src" style="margin-top:16px;"><span class="k">src</span> Exp 1 · synthetic n=10,000 · experiment1_temporal_patterns</p></div>
+      <div><p class="lead">EADD detects all four drift types; D3 detects only two and misses incremental drift entirely. Where both detect, the delays are comparable.</p>
+        <p class="src" style="margin-top:16px;"><span class="k">Source</span> Experiment 1 — synthetic.</p></div>
     </div>
   </div>
 </section>
 
-<!-- 26 · COVERAGE vs FA -->
+<!-- 46 · MTD -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 2</span><span>Coverage vs false alarms</span></div>
-    <h2 style="margin-top:12px;">Both, not either</h2>
-    <div class="rule"></div>
-    <div class="viz" data-viz="chart" data-chart="coverageFA" style="max-width:880px;"></div>
-    <p class="lead" style="margin-top:14px;">EADD: <b>4/4 coverage AND 0 false alarms.</b> BNDM/CSDDM/IBDD/OCDD also hit 4/4 — but pay heavy FA cost; D3/SPLL keep 0 FA only by missing half the types.
-      <span class="src">&nbsp; <span class="k">src</span> Exp 5 · 8-detector field</span></p>
-  </div>
-</section>
-
-<!-- 27 · MTD -->
-<section>
-  <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 3</span><span>Real-world INSECTS</span></div>
-    <h2 style="margin-top:12px;">Faster detection on incremental drift</h2>
+    <div class="kicker"><span class="n">09</span><span>Results · experiment 2</span></div>
+    <h2 style="margin-top:12px;">Faster detection on real-world streams</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="chart" data-chart="mtd"></div>
       <div>
         <div class="chips"><span class="chip">8× · IncrAbrupt</span><span class="chip">2.4× · IncrRecur</span><span class="chip">13% · Abrupt</span></div>
-        <p class="lead" style="margin-top:16px;">EADD beats D3 on mean-time-to-detection in all three jointly detected streams.</p>
-        <p class="src" style="margin-top:12px;"><span class="k">src</span> Exp 2 · annotated INSECTS</p>
+        <p class="lead" style="margin-top:16px;">On the annotated INSECTS datasets, EADD achieves a lower mean time to detection than D3 on all three jointly detected streams.</p>
+        <p class="src" style="margin-top:12px;"><span class="k">Source</span> Experiment 2 — annotated INSECTS.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 28 · SHAP accuracy -->
+<!-- 47 · FALSE ALARMS -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 4</span><span>Attribution accuracy</span></div>
-    <h2 style="margin-top:12px;">SHAP finds the right feature</h2>
+    <div class="kicker"><span class="n">09</span><span>Results · robustness</span></div>
+    <h2 style="margin-top:12px;">Zero false alarms on stable streams</h2>
+    <div class="rule"></div>
+    <div class="viz" data-viz="chart" data-chart="falseAlarms" style="max-width:880px;"></div>
+    <p class="lead" style="margin-top:14px;font-size:21px;">EADD produces zero false alarms on all four stable stream types. ASPT suppresses the <b>54.6</b> spurious detections that D3 raises on autocorrelated AR(1) data.
+      <span class="src">&nbsp; Mann–Whitney U test vs. D3 (τ = 0.6): <b class="pink">p = 0.0101</b></span></p>
+  </div>
+</section>
+
+<!-- 48 · SHAP ACCURACY -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">09</span><span>Results · experiment 3</span></div>
+    <h2 style="margin-top:12px;">Attribution accuracy</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="chart" data-chart="shap"></div>
       <div>
         <table class="caps small">
-          <thead><tr><th>Scenario</th><th>AUC</th><th>Top</th><th>DSI</th></tr></thead>
+          <thead><tr><th>Scenario</th><th>AUC</th><th>Top feature</th><th>DSI</th></tr></thead>
           <tbody>
             <tr><td>Univariate</td><td>0.784</td><td class="pink">F3 · 52%</td><td>0.193</td></tr>
             <tr><td>Subset</td><td>0.809</td><td>F5 · 25%</td><td>0.096</td></tr>
@@ -480,147 +764,153 @@
           </tbody>
         </table>
         <p class="lead pink" style="margin-top:14px;font-weight:600;">P@k = R@k = 1.0</p>
-        <p class="src">DSI orders by concentration: uni &gt; subset &gt; multi.</p>
+        <p class="src">The DSI decreases as the change becomes more diffuse: univariate &gt; subset &gt; multivariate.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 29 · FALSE ALARMS -->
-<section>
-  <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 5</span><span>Robustness</span></div>
-    <h2 style="margin-top:12px;">Zero false alarms on stable streams</h2>
-    <div class="rule"></div>
-    <div class="viz" data-viz="chart" data-chart="falseAlarms" style="max-width:880px;"></div>
-    <p class="lead" style="margin-top:14px;">0 FA on all 4 stable types. ASPT suppresses D3’s <b>54.6</b> spurious detections on autocorrelated AR(1).
-      <span class="src">&nbsp; Mann–Whitney U vs D3 (τ=0.6): <b class="pink">p=0.0101</b></span></p>
-  </div>
+<!-- ============================ PART 10 · EVALUATION ============================ -->
+
+<!-- 49 · DIVIDER 10 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">10</div>
+    <div class="secno">Part 10</div><div class="dh">Evaluation</div>
+    <div class="dsub">Where the gains come from, and what they cost.</div></div>
 </section>
 
-<!-- 30 · ABLATION / runtime -->
+<!-- 50 · ABLATION -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">04 · RESULT 6</span><span>Ablation & cost</span></div>
-    <h2 style="margin-top:12px;">Where the gain comes from</h2>
+    <div class="kicker"><span class="n">10</span><span>Evaluation · ablation</span></div>
+    <h2 style="margin-top:12px;">Where the improvement comes from</h2>
     <div class="rule"></div>
     <div class="cols c-55">
       <div class="viz" data-viz="chart" data-chart="runtimeD"></div>
       <div>
-        <div class="box tight"><b>Coverage</b> 4/4 vs 2/4 → from <span class="pink">LightGBM</span> (−ASPT also reaches 4/4)</div>
-        <div class="box tight" style="margin-top:10px;"><b>0 FA on AR(1)</b> → from <span class="pink">ASPT</span></div>
-        <div class="box tight" style="margin-top:10px;"><b>Cost</b> ~50–160× D3 — dominated by LightGBM, ASPT &lt;5%</div>
+        <div class="box tight"><b>Coverage</b> (4/4 vs. 2/4) comes from <span class="pink">LightGBM</span>; the variant without ASPT also reaches 4/4.</div>
+        <div class="box tight" style="margin-top:10px;"><b>Zero false alarms</b> on AR(1) data come from <span class="pink">ASPT</span>.</div>
+        <div class="box tight" style="margin-top:10px;"><b>Cost</b> (≈ 50–160× D3) is dominated by LightGBM training; ASPT adds under 5%.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 31 · DIVIDER 05 -->
-<section data-background-color="#000000">
-  <div class="divider pad"><div class="ghost">05</div>
-    <div class="secno">Act 05</div><div class="dh">Discussion</div>
-    <div class="dsub">Honest limits — and where this goes next.</div></div>
-</section>
-
-<!-- 32 · LIMITATIONS -->
+<!-- 51 · RUNTIME + CORRELATED -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">05</span><span>Limitations</span></div>
-    <h2 style="margin-top:14px;">What EADD cannot claim — yet</h2>
+    <div class="kicker"><span class="n">10</span><span>Evaluation · scaling &amp; robustness</span></div>
+    <h2 style="margin-top:12px;">Practical to run, robust to correlation</h2>
+    <div class="rule"></div>
+    <div class="cols c-2" style="gap:30px;">
+      <div>
+        <div class="viz" data-viz="chart" data-chart="runtimeN"></div>
+        <p class="src" style="margin-top:10px;">Window size N from 200 to 1000 raises runtime only <b class="pink">1.6×</b> — sub-linear scaling.</p>
+      </div>
+      <div>
+        <div class="viz" data-viz="chart" data-chart="correlated"></div>
+        <p class="src" style="margin-top:10px;">First detection at t ≈ <b class="pink">4099</b> for ρ ∈ {0, 0.5, 0.9}; stable correlated streams give zero false alarms.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PART 11 · DISCUSSION ============================ -->
+
+<!-- 52 · DIVIDER 11 -->
+<section data-background-color="#000000">
+  <div class="divider pad"><div class="ghost">11</div>
+    <div class="secno">Part 11</div><div class="dh">Discussion</div>
+    <div class="dsub">Honest limitations and the road ahead.</div></div>
+</section>
+
+<!-- 53 · LIMITATIONS -->
+<section>
+  <div class="pad">
+    <div class="kicker"><span class="n">11</span><span>Discussion · limitations</span></div>
+    <h2 style="margin-top:14px;">Limitations</h2>
     <div class="rule"></div>
     <ul class="limlist">
-      <li>Wall-clock ~50–160× D3 — LightGBM retrains every M=50 steps.</li>
-      <li><b>Multiple testing over time:</b> ~600 tests/30k samples; zero-FA result is empirical, not theoretically guaranteed.</li>
-      <li>DSI tier boundaries are heuristic — never triggered above LOW in experiments.</li>
+      <li>Runtime is about 50–160× that of D3, because LightGBM retrains every 50 steps.</li>
+      <li><b>Multiple testing over time:</b> roughly 600 tests are run per 30,000 samples. The zero-false-alarm result is empirical, not theoretically guaranteed.</li>
+      <li>The DSI tier boundaries are heuristic and were never triggered above the low tier in our experiments.</li>
       <li>SHAP attributions are correlational, not causal.</li>
     </ul>
   </div>
 </section>
 
-<!-- 33 · FUTURE -->
+<!-- 54 · FUTURE -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">05</span><span>Future work</span></div>
-    <h2 style="margin-top:14px;">Each gap is a thread</h2>
+    <div class="kicker"><span class="n">11</span><span>Discussion · future work</span></div>
+    <h2 style="margin-top:14px;">Future work</h2>
     <div class="rule"></div>
     <div class="cols c-2">
       <ul class="limlist future">
-        <li>Anytime-valid <b>e-values</b> for streaming FWER control.</li>
-        <li><b>Causal</b> attribution (Budhathoki+ 2021<sup class="cite">10</sup>).</li>
+        <li>Anytime-valid <b>e-values</b> for family-wise error control in streams.<sup class="cite">[22]</sup></li>
+        <li><b>Causal</b> attribution methods, moving beyond correlation.<sup class="cite">[10]</sup></li>
       </ul>
       <ul class="limlist future">
-        <li>Multi-domain <b>DSI calibration</b>.</li>
+        <li>Calibration of the <b>DSI</b> tiers across multiple production domains.</li>
         <li>Adversarial robustness of discriminative detectors.</li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- 34 · CONCLUSION -->
+<!-- ============================ PART 12 · CONCLUSION ============================ -->
+
+<!-- 55 · CONCLUSION -->
 <section data-background-color="#000000">
   <div class="pad">
-    <div class="kicker"><span class="n">06</span><span>Conclusion</span></div>
-    <h2 style="margin-top:12px;">One pipeline, four answers</h2>
+    <div class="kicker"><span class="n">12</span><span>Conclusion</span></div>
+    <h2 style="margin-top:12px;">One pipeline that answers four questions</h2>
     <div class="rule"></div>
     <div class="cols" style="grid-template-columns:repeat(4,1fr);gap:0;margin:6px 0 22px;">
       <div class="stat" style="padding-right:24px;border-right:1px solid var(--hair-soft);"><div class="num" style="font-size:56px;">4/4</div><div class="cap" style="margin-top:8px;">coverage</div></div>
       <div class="stat" style="padding:0 24px;border-right:1px solid var(--hair-soft);"><div class="num" style="font-size:56px;">0</div><div class="cap" style="margin-top:8px;">false alarms</div></div>
-      <div class="stat" style="padding:0 24px;border-right:1px solid var(--hair-soft);"><div class="num" style="font-size:56px;">8×</div><div class="cap" style="margin-top:8px;">faster MTD</div></div>
+      <div class="stat" style="padding:0 24px;border-right:1px solid var(--hair-soft);"><div class="num" style="font-size:56px;">8×</div><div class="cap" style="margin-top:8px;">faster detection</div></div>
       <div class="stat" style="padding-left:24px;"><div class="num" style="font-size:56px;">1.00</div><div class="cap" style="margin-top:8px;">SHAP P@k</div></div>
     </div>
     <div class="cols c-2">
-      <div class="box"><div class="box-tag">what we built</div><p class="src" style="font-size:17px;line-height:1.6;margin-top:8px;">ASPT + H_pred · SHAP + DSI · benchmark vs 7 detectors.</p></div>
-      <div class="box" style="border-color:var(--pink);"><div class="box-tag">what it gives MLOps</div><p class="src" style="font-size:17px;line-height:1.6;margin-top:8px;">Reliable alarms · actionable diagnoses · severity-tiered prescriptions.</p></div>
+      <div class="box"><div class="box-tag">Contributions</div><p class="src" style="font-size:17px;line-height:1.6;margin-top:8px;">ASPT with H_pred, SHAP with the DSI, and a benchmark against seven detectors.</p></div>
+      <div class="box" style="border-color:var(--pink);"><div class="box-tag">Value for MLOps</div><p class="src" style="font-size:17px;line-height:1.6;margin-top:8px;">Reliable alarms, actionable diagnoses, and severity-tiered recommendations.</p></div>
     </div>
   </div>
 </section>
 
-<!-- 35 · THANK YOU -->
+<!-- 56 · THANK YOU -->
 <section data-background-color="#000000">
   <div class="pad" style="display:flex;flex-direction:column;justify-content:center;">
     <div class="wordmark" style="font-size:30px;margin-bottom:24px;"><span class="dot"></span> EADD</div>
     <h1 style="font-size:96px;">Thank you.</h1>
-    <div class="lead" style="color:var(--pink);font-style:italic;margin-top:14px;">Questions &amp; discussion welcome.</div>
+    <div class="lead" style="color:var(--pink);font-style:italic;margin-top:14px;">Questions and discussion are welcome.</div>
     <div class="rule" style="max-width:620px;margin:30px 0 18px;"></div>
     <div class="src" style="font-size:16px;line-height:2;">
       <span class="k">Nusrat Begum</span> &nbsp; nusrat.beg@student.mahidol.ac.th<br>
-      Code, paper &amp; thesis available at the project repository.</div>
+      The code, paper, and thesis are available in the project repository.</div>
   </div>
 </section>
 
-<!-- 36 · REFERENCES -->
+<!-- ============================ PART 13 · REFERENCES ============================ -->
+
+<!-- 57 · REFERENCES A -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">·</span><span>Sources</span></div>
-    <h2 style="margin-top:12px;">Selected references</h2>
+    <div class="kicker"><span class="n">·</span><span>References</span></div>
+    <h2 style="margin-top:12px;">References (1)</h2>
     <div class="rule"></div>
-    <div class="refs2" id="refs"></div>
+    <div class="refs2" id="refsA"></div>
   </div>
 </section>
 
-<!-- B1 · backup runtime N -->
+<!-- 58 · REFERENCES B -->
 <section>
   <div class="pad">
-    <div class="kicker"><span class="n">backup</span><span>Runtime scaling</span></div>
-    <h2 style="margin-top:12px;">Sub-linear in window size</h2>
+    <div class="kicker"><span class="n">·</span><span>References</span></div>
+    <h2 style="margin-top:12px;">References (2)</h2>
     <div class="rule"></div>
-    <div class="cols c-55">
-      <div class="viz" data-viz="chart" data-chart="runtimeN"></div>
-      <div><p class="lead">N: 200→1000 grows EADD time only <b>1.6×</b>. ASPT overhead &lt;5% across window sizes.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- B2 · backup correlated -->
-<section>
-  <div class="pad">
-    <div class="kicker"><span class="n">backup</span><span>Correlated features</span></div>
-    <h2 style="margin-top:12px;">Robust to feature correlation</h2>
-    <div class="rule"></div>
-    <div class="cols c-55">
-      <div class="viz" data-viz="chart" data-chart="correlated"></div>
-      <div><p class="lead">First-detection at t≈<b>4099</b> for ρ∈{0,0.5,0.9} (D3 at 4117). Stable correlated streams → 0 FA.</p></div>
-    </div>
+    <div class="refs2" id="refsB"></div>
   </div>
 </section>
 
@@ -639,9 +929,17 @@
 <script src="js/viz/explainers.js"></script>
 <script src="js/viz/charts.js"></script>
 <script>
-  // populate references from data
-  (function(){var r=document.getElementById('refs');if(r&&window.EADD){r.innerHTML=window.EADD.refs.map(function(x){
-    return '<div class="r"><span class="rn">'+x[0]+'</span><b>'+x[1]+'</b> <span class="rv">'+x[2]+'</span></div>';}).join('');}})();
+  // populate references from data, split across two slides
+  (function(){
+    if(!window.EADD) return;
+    var refs = window.EADD.refs, half = 11;
+    function fill(id, list){ var el=document.getElementById(id); if(!el) return;
+      el.innerHTML = list.map(function(x){
+        return '<div class="r"><span class="rn">'+x[0]+'</span><b>'+x[1]+'</b> <span class="rv">'+x[2]+'</span></div>';
+      }).join(''); }
+    fill('refsA', refs.slice(0, half));
+    fill('refsB', refs.slice(half));
+  })();
 </script>
 <script src="js/deck.js"></script>
 </body>

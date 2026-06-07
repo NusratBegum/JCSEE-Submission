@@ -293,6 +293,63 @@ table.caps.small td:first-child{ font-size:16px; }
 .refs2 .r b{ color:var(--white); font-weight:600; }
 .refs2 .r .rv{ color:var(--faint); }
 
+/* ---------- history timeline (horizontal rail) ---------- */
+.timeline{ position:relative; margin-top:40px; }
+.timeline .rail{ position:absolute; top:8px; left:2%; right:2%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--hair) 10%,var(--hair) 90%,transparent); }
+.tline{ display:grid; grid-template-columns:repeat(5,1fr); gap:22px; position:relative; }
+.tnode .dot{ width:18px; height:18px; border-radius:50%; background:var(--black);
+  border:3px solid var(--pink); box-shadow:0 0 14px rgba(255,0,128,.8); margin:0 0 22px; }
+.tnode .yr{ font-family:var(--epi); font-weight:800; font-size:19px; color:var(--pink); letter-spacing:.03em; }
+.tnode .tt{ font-family:var(--epi); font-weight:700; font-size:18px; color:#fff; margin:5px 0 8px; line-height:1.15; }
+.tnode .td{ font-family:var(--zil); font-size:15px; color:var(--dim); line-height:1.46; }
+
+/* ---------- status panels (system OK vs model decaying) ---------- */
+.status{ display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:8px; }
+.spanel{ border:1px solid var(--hair-soft); border-radius:12px; padding:26px 28px; background:var(--panel-2); }
+.spanel.ok{ border-color:rgba(54,226,155,.45); }
+.spanel.bad{ border-color:var(--pink); box-shadow:0 0 28px rgba(255,0,128,.15) inset; }
+.spanel .sh{ font-family:var(--epi); font-weight:700; font-size:19px; display:flex; align-items:center; gap:12px; }
+.spanel.ok .sh{ color:var(--pos); } .spanel.bad .sh{ color:var(--pink); }
+.spanel .sb{ font-family:var(--zil); font-size:20px; color:var(--dim); margin-top:14px; line-height:1.5; }
+.spanel .sb b{ color:var(--white); }
+.sled{ width:13px; height:13px; border-radius:50%; flex:none; }
+.sled.g{ background:var(--pos); box-shadow:0 0 12px var(--pos); }
+.sled.r{ background:var(--pink); box-shadow:0 0 12px var(--pink); animation:blink 1.2s infinite; }
+@keyframes blink{ 50%{ opacity:.28; } }
+
+/* ---------- example cards (real-world impact) ---------- */
+.excards{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:6px; }
+.excard{ border:1px solid var(--hair); background:var(--panel); border-radius:11px; padding:24px 22px; }
+.excard .exic{ width:42px; height:42px; background:var(--pink); margin-bottom:14px;
+  -webkit-mask:var(--icm) no-repeat center/contain; mask:var(--icm) no-repeat center/contain;
+  filter:drop-shadow(0 0 9px rgba(255,0,128,.4)); }
+.excard .ext{ font-family:var(--epi); font-weight:700; font-size:20px; color:#fff; }
+.excard .exd{ font-family:var(--zil); font-size:16px; color:var(--dim); margin-top:9px; line-height:1.5; }
+.excard .exd b{ color:var(--white); }
+
+/* ---------- detector grid ---------- */
+.dgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:10px; }
+.dcard{ border:1px solid var(--hair-soft); border-radius:10px; padding:17px 18px; background:var(--panel-2); }
+.dcard.win{ border-color:var(--pink); background:rgba(255,0,128,.08); box-shadow:0 0 22px rgba(255,0,128,.12) inset; }
+.dcard .dnm{ font-family:var(--epi); font-weight:700; font-size:19px; color:#fff; }
+.dcard.win .dnm{ color:var(--pink); }
+.dcard .ddesc{ font-family:var(--zil); font-size:14px; color:var(--dim); margin-top:7px; line-height:1.42; }
+
+/* ---------- detect-and-discard flow ---------- */
+.discard{ display:flex; align-items:center; gap:16px; justify-content:center; margin-top:26px; flex-wrap:nowrap; }
+.dbox{ border:1px solid var(--hair); border-radius:9px; padding:18px 22px; background:var(--panel);
+  font-family:var(--epi); font-weight:700; font-size:18px; text-align:center; min-width:150px; }
+.dbox .sub{ font-family:var(--zil); font-size:13px; color:var(--dim); font-weight:400; margin-top:5px; }
+.dbox.trash{ border-color:var(--neg); color:var(--neg); border-style:dashed; }
+.dbox.keep{ border-color:var(--pos); color:var(--pos); }
+.darr{ color:var(--pink); font-size:28px; opacity:.75; }
+
+/* ---------- formal problem card ---------- */
+.formal{ font-family:var(--zil); font-size:23px; color:var(--dim); line-height:1.9; }
+.formal .ff{ font-family:var(--epi); color:var(--pink); font-weight:700; }
+.formal b{ color:var(--white); }
+
 /* ---------- PRINT / PDF export ---------- */
 @media print{
   .brand-glow{ display:none; }            /* glows muddy the PDF */

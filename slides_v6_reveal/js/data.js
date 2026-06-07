@@ -107,6 +107,14 @@ window.EADD = {
     ["11", "Souza et al.", "Challenges in benchmarking stream learning (INSECTS). Data Min. Knowl. Discov. 2020."],
     ["12", "Vela et al. / Nestor et al.", "Temporal degradation of clinical prediction models. 2019–2022."],
     ["13", "Panda et al.", "Interpretable model drift detection (TRIPODD). ACM IKDD CODS-COMAD 2024."],
-    ["14", "Singh et al.", "A hierarchical decomposition for explaining ML performance discrepancies (HDPD). NeurIPS 2024."]
+    ["14", "Singh et al.", "A hierarchical decomposition for explaining ML performance discrepancies (HDPD). NeurIPS 2024."],
+    ["15", "Gama et al.", "Learning with drift detection (DDM). Brazilian Symp. Artificial Intelligence 2004."],
+    ["16", "Bifet & Gavaldà", "Learning from time-changing data with adaptive windowing (ADWIN). SIAM SDM 2007."],
+    ["17", "Raab et al.", "Reactive soft prototype computing for concept drift streams (KSWIN). Neurocomputing 2020."],
+    ["18", "Gretton et al.", "A kernel two-sample test (MMD). J. Mach. Learn. Res. 2012."],
+    ["19", "Page", "Continuous inspection schemes (CUSUM). Biometrika 1954."],
+    ["20", "Taly & Sato", "Monitoring feature attributions, Vertex AI. Google Cloud Blog 2021."],
+    ["21", "AWS", "Amazon SageMaker Clarify: model monitoring. AWS Documentation 2025."],
+    ["22", "Pandeva et al.", "E-valuating classifier two-sample tests (E-C2ST). TMLR 2024."]
   ]
 };
