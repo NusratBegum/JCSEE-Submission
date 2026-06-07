@@ -38,6 +38,8 @@
       var yy = y(maxv * t);
       g.append("line").attr("x1", 0).attr("x2", iw).attr("y1", yy).attr("y2", yy).attr("stroke", "rgba(255,255,255,.06)");
     });
+    if (opts.ylabel) lbl(g.append("text")).attr("transform", "rotate(-90)").attr("x", -ih / 2)
+      .attr("y", -m.l + 14).attr("text-anchor", "middle").attr("fill", FAINT).attr("font-size", 12).text(opts.ylabel);
     rows.forEach(function (r) {
       var grp = g.append("g").attr("transform", "translate(" + x0(r.label || r.s) + ",0)");
       series.forEach(function (s) {
@@ -160,6 +162,8 @@
     lbl(g.selectAll(".axis text")).attr("fill", FAINT).attr("font-size", 14).attr("dy", "1.3em");
     g.append("line").attr("x1", 0).attr("x2", iw).attr("y1", y(10)).attr("y2", y(10)).attr("stroke", "rgba(255,255,255,.25)").attr("stroke-dasharray", "4 4");
     lbl(g.append("text")).attr("x", iw).attr("y", y(10) - 6).attr("text-anchor", "end").attr("fill", FAINT).attr("font-size", 11).text("uniform 10%");
+    lbl(g.append("text")).attr("transform", "rotate(-90)").attr("x", -ih / 2).attr("y", -m.l + 13)
+      .attr("text-anchor", "middle").attr("fill", FAINT).attr("font-size", 12).text("top-feature SHAP share (%)");
     rows.forEach(function (r) {
       var bar = g.append("rect").attr("x", x(r.label)).attr("width", x.bandwidth()).attr("rx", 3).attr("y", ih).attr("height", 0)
         .attr("fill", "url(#barpink)").attr("filter", "url(#" + b.glow + ")");
@@ -174,15 +178,19 @@
     var t = el.dataset.chart;
     if (t === "coverageFA") return coverageFA(el);
     if (t === "mtd") return groupedBars(el, E.mtd, [
-      { key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }]);
+      { key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }],
+      { ylabel: "mean time to detection (samples)" });
     if (t === "delay") return groupedBars(el, E.delay, [
-      { key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }]);
+      { key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }],
+      { ylabel: "detection delay (samples)" });
     if (t === "falseAlarms") return groupedBars(el, E.falseAlarms, [
       { key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 },
-      { key: "d3a", name: "D3 τ=0.6", fill: PLUM }, { key: "d3b", name: "D3 τ=0.7", fill: "rgba(154,160,176,.5)" }]);
+      { key: "d3a", name: "D3 τ=0.6", fill: PLUM }, { key: "d3b", name: "D3 τ=0.7", fill: "rgba(154,160,176,.5)" }],
+      { ylabel: "false alarms (count)" });
     if (t === "correlated") return groupedBars(el, E.correlated.rho.map(function (r, i) {
       return { label: "ρ=" + r, eadd: E.correlated.eadd[i], d3: E.correlated.d3[i] };
-    }), [{ key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }]);
+    }), [{ key: "eadd", name: "EADD", fill: "url(#barpink)", glow: 1 }, { key: "d3", name: "D3", fill: "rgba(154,160,176,.5)" }],
+      { ylabel: "first detection (t)" });
     if (t === "runtimeD") return multiLine(el, { xs: E.runtimeD.d, xlabel: "feature dimension  d", lines: [
       { name: "EADD", v: E.runtimeD.full, color: PINK, glow: 1 },
       { name: "−ASPT", v: E.runtimeD.noaspt, color: PLUM, dash: "5 4" },
