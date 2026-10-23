@@ -4,7 +4,8 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 
 **Paper title:** *Enhanced Adversarial Drift Detection for MLOps Feature Monitoring*
 **Paper #:** 1571280455 (EDAS) · 2026172661 (IEEE PDF eXpress, Conference ID 68839X)
-**Status:** Accepted (Round 3); camera-ready submitted.
+**Status:** Published in the JCSSE 2026 proceedings on IEEE Xplore: https://ieeexplore.ieee.org/xpl/conhome/11596549/proceeding
+**Thesis:** this paper is the conference publication of the Master's thesis in [Nusrat-Thesis-Mahidol-University](https://github.com/NusratBegum/Nusrat-Thesis-Mahidol-University). The thesis reruns the real-world experiments with three seeds and drops the Drift Severity Index, so some numbers differ.
 
 📅 **Conference:** 24–27 June 2026
 📍 **Location:** The Royal River Hotel, Bangkok, Thailand
