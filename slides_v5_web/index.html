@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>EADD — JCSSE 2026</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============================================================
+     SLIDE 1 — TITLE (dark)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="title-wrap">
+    <div class="title-eyebrow">JCSSE 2026<span class="dot">·</span>STREAMING ML<span class="dot">·</span>EXPLAINABLE AI</div>
+    <h1 class="title-main">Enhanced Adversarial<br>Drift Detection</h1>
+    <div class="title-sub">for MLOps Feature Monitoring</div>
+    <div class="title-rule"></div>
+    <div class="authors">
+      Nusrat Begum<sup>1</sup>&nbsp;&nbsp; Phaphontee Yamchote<sup>1</sup>&nbsp;&nbsp; Chainarong Amornbunchornvej<sup>2</sup>&nbsp;&nbsp; Thanapon Noraset<sup>1</sup>
+    </div>
+    <div class="affil"><span class="mono cobalt">1</span>&nbsp;Faculty of ICT, Mahidol University &nbsp;&nbsp;·&nbsp;&nbsp; <span class="mono cobalt">2</span>&nbsp;NECTEC, NSTDA, Thailand</div>
+  </div>
+  <div class="title-venue">
+    <div>JCSSE 2026&nbsp;&nbsp;·&nbsp;&nbsp;BANGKOK, THAILAND&nbsp;&nbsp;·&nbsp;&nbsp;JUNE 24–27, 2026</div>
+    <div>NUSRAT.BEG@STUDENT.MAHIDOL.AC.TH</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2 — ROADMAP (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">00</span> / ROADMAP</div>
+      <h2>Where we are going</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="roadmap-grid">
+      <div class="rm-step"><div class="n">01</div><div class="t">Motivation</div><div class="d">Why production detectors miss</div></div>
+      <div class="rm-step"><div class="n">02</div><div class="t">Method</div><div class="d">The EADD pipeline</div></div>
+      <div class="rm-step"><div class="n">03</div><div class="t">ASPT</div><div class="d">Sequential permutation test</div></div>
+      <div class="rm-step"><div class="n">04</div><div class="t">SHAP + DSI</div><div class="d">Attribution & severity</div></div>
+      <div class="rm-step"><div class="n">05</div><div class="t">Setup</div><div class="d">Synthetic + 13 real streams</div></div>
+      <div class="rm-step"><div class="n">06</div><div class="t">Results</div><div class="d">Coverage, FA, speed, SHAP</div></div>
+      <div class="rm-step"><div class="n">07</div><div class="t">Ablation</div><div class="d">Where the gain comes from</div></div>
+      <div class="rm-step"><div class="n">08</div><div class="t">Outlook</div><div class="d">Limits & future work</div></div>
+    </div>
+    <div style="position:absolute; left:84px; right:84px; bottom:96px;">
+      <div class="takeaway" style="font-size:16px;"><b>EADD answers WHETHER, WHEN, WHICH,</b> and <b>HOW SEVERE</b> — in one pipeline.</div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:8%"></i></div><div>02 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3 — SECTION 01 (dark)
+     ============================================================ -->
+<section class="slide dark divider">
+  <div class="ghost">01</div>
+  <div class="body">
+    <div class="secno">SECTION 01</div>
+    <h1>The Problem</h1>
+    <div class="sub">Why production ML detectors miss the mark.</div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:13%"></i></div><div>03 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4 — Production ML fails silently (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">01</span> / THE PROBLEM</div>
+      <h2>Production ML fails silently</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.15fr 1fr; gap:36px;">
+      <div>
+        <div class="minilabel">Accuracy after drift onset</div>
+        <!-- line chart: accuracy decays -->
+        <svg class="anim-line" width="540" height="280" viewBox="0 0 540 280">
+          <!-- axes -->
+          <line x1="56" y1="20" x2="56" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="230" x2="520" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- y ticks -->
+          <text x="48" y="44" text-anchor="end" font-size="11" fill="#6B6F76">1.00</text>
+          <text x="48" y="118" text-anchor="end" font-size="11" fill="#6B6F76">0.80</text>
+          <text x="48" y="192" text-anchor="end" font-size="11" fill="#6B6F76">0.60</text>
+          <line x1="53" y1="40" x2="56" y2="40" stroke="#6B6F76" stroke-width="1"/>
+          <line x1="53" y1="114" x2="56" y2="114" stroke="#6B6F76" stroke-width="1"/>
+          <line x1="53" y1="188" x2="56" y2="188" stroke="#6B6F76" stroke-width="1"/>
+          <!-- drift onset vertical -->
+          <line x1="288" y1="20" x2="288" y2="230" stroke="#F5A623" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="288" y="252" text-anchor="middle" font-size="10.5" fill="#F5A623" letter-spacing="1">DRIFT ONSET</text>
+          <!-- accuracy line: flat ~0.91 then decays to ~0.60 -->
+          <!-- 0.91 -> y=73 ; 0.60 -> y=188 -->
+          <polyline class="series" fill="none" stroke="#2D5BFF" stroke-width="2.5"
+            points="56,73 110,71 165,74 220,72 288,73 320,92 360,120 410,152 460,176 520,186"/>
+          <!-- silent failure region marker -->
+          <circle cx="520" cy="186" r="3.5" fill="#E5484D"/>
+          <text x="516" y="204" text-anchor="end" font-size="10.5" fill="#E5484D" letter-spacing="1">SILENT FAILURE</text>
+          <text x="100" y="60" font-size="10.5" fill="#6B6F76" letter-spacing="1">DEPLOY · 0.91</text>
+          <text x="56" y="270" font-size="11" fill="#6B6F76">stream time →</text>
+        </svg>
+        <div class="chips" style="margin-top:18px;">
+          <div class="chip accent">Which features?</div>
+          <div class="chip accent">How severe?</div>
+          <div class="chip accent">Real or noise?</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="padding:20px 22px;">
+          <div class="cap">D3 — Gözüaçık et al., CIKM 2019</div>
+          <div style="font-family:var(--geist); font-weight:600; font-size:17px; margin:8px 0 4px; letter-spacing:-.01em;">Most robust unsupervised detector</div>
+          <div class="note" style="margin-bottom:14px;">Ranked most robust in <b>Lukats et al. 2024</b> — yet three structural gaps remain.</div>
+          <ul class="gaplist">
+            <li><span class="gn">01</span><span class="gt"><b>No formal significance test</b> → false alarms on autocorrelated streams.</span></li>
+            <li><span class="gn">02</span><span class="gt"><b>No feature attribution</b> → "detect-and-discard" classifier.</span></li>
+            <li><span class="gn">03</span><span class="gt"><b>Linear classifier</b> → misses non-linear / incremental drift.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:17%"></i></div><div>04 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5 — Capability matrix (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">01</span> / THE PROBLEM</div>
+      <h2>Capability matrix</h2>
+      <div class="rule"></div>
+    </div>
+    <table class="matrix" style="margin-top:6px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;">Detector</th>
+          <th>Whether</th><th>Which</th><th>Severity</th><th>Streaming</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>DDM / EDDM</td><td class="pos">✓</td><td class="neg">✗</td><td class="neg">✗</td><td class="pos">✓</td></tr>
+        <tr><td>KS / KSWIN</td><td class="pos">✓</td><td class="warn">~</td><td class="neg">✗</td><td class="pos">✓</td></tr>
+        <tr><td>D3</td><td class="pos">✓</td><td class="neg">✗</td><td class="neg">✗</td><td class="pos">✓</td></tr>
+        <tr><td>Vertex AI / Clarify</td><td class="pos">✓</td><td class="pos">✓</td><td class="warn">~</td><td class="neg">✗</td></tr>
+        <tr><td>TRIPODD / HDPD</td><td class="pos">✓</td><td class="pos">✓</td><td class="neg">✗</td><td class="neg">✗</td></tr>
+        <tr class="hl"><td>EADD (this work)</td><td class="pos">✓</td><td class="pos">✓</td><td class="pos">✓</td><td class="pos">✓</td></tr>
+      </tbody>
+    </table>
+    <div class="takeaway" style="margin-top:26px;"><b>No prior unsupervised streaming detector integrates whether + which + severity.</b></div>
+    <div class="legend" style="margin-top:20px;">
+      <div class="li"><span class="sw" style="background:#12A150;"></span> ✓ supported</div>
+      <div class="li"><span class="sw" style="background:#F5A623;"></span> ~ partial</div>
+      <div class="li"><span class="sw" style="background:#E5484D;"></span> ✗ none</div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:22%"></i></div><div>05 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6 — Three contributions (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">01</span> / CONTRIBUTIONS</div>
+      <h2>Three contributions</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="contrib">
+      <div class="card">
+        <div class="ix">01</div>
+        <h3>ASPT</h3>
+        <div class="sub">Adaptive Sequential Permutation Test</div>
+        <p>A formal permutation test gates drift confirmation — restoring statistical rigour to unsupervised detection.</p>
+        <div class="foot">90–95% fewer permutations · confirms at i=20 vs B<sub>max</sub>=199 · inspired by Gandy 2009</div>
+      </div>
+      <div class="card">
+        <div class="ix">02</div>
+        <h3>SHAP + DSI</h3>
+        <div class="sub">Attribution & Severity</div>
+        <p>TreeSHAP on the C2ST classifier identifies <i>which</i> features drifted; an entropy-normalised index scores <i>how severe</i>.</p>
+        <div class="foot">DSI = AUC · (1 − H<sub>norm</sub>(s))</div>
+      </div>
+      <div class="card">
+        <div class="ix">03</div>
+        <h3>Benchmark</h3>
+        <div class="sub">vs 7 unsupervised detectors</div>
+        <p>EADD evaluated against 7 detectors on synthetic streams + 13 real-world streams.</p>
+        <div class="foot">4/4 coverage · 0 false alarms · P@k = R@k = 1.0 (univariate)</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:26%"></i></div><div>06 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7 — SECTION 02 (dark)
+     ============================================================ -->
+<section class="slide dark divider">
+  <div class="ghost">02</div>
+  <div class="body">
+    <div class="secno">SECTION 02</div>
+    <h1>The EADD Pipeline</h1>
+    <div class="sub">Four-step streaming detector.</div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:30%"></i></div><div>07 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8 — End-to-end pipeline (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">02</span> / METHOD</div>
+      <h2>End-to-end pipeline</h2>
+      <div class="rule"></div>
+    </div>
+    <div style="margin-top:6px;">
+      <!-- Row 1 -->
+      <div class="flow" style="margin-bottom:14px;">
+        <div class="fbox" style="border-color:#2D5BFF;">
+          <div class="fn">STREAM</div><div class="ft">{x<sub>t</sub>} ∈ ℝ<sup>d</sup></div>
+        </div>
+        <span class="farrow">→</span>
+        <div class="fbox"><div class="fn">① ADAPTIVE WINDOWS</div><div class="ft">W<sub>ref</sub> reservoir · W<sub>cur</sub> sliding</div></div>
+        <span class="farrow">→</span>
+        <div class="fbox"><div class="fn">② LIGHTGBM C2ST</div><div class="ft">AUC · H<sub>pred</sub></div></div>
+        <span class="farrow">→</span>
+        <div class="fdiamond">◇ AUC &gt; τ ?</div>
+      </div>
+      <!-- Row 2 (continues from the AUC>τ? "yes" branch) -->
+      <div class="flow" style="margin-bottom:14px;">
+        <span class="mono" style="color:#6B6F76; font-size:12px; font-weight:500; align-self:center; white-space:nowrap;">↳ yes</span>
+        <span class="farrow">→</span>
+        <div class="fbox"><div class="fn">③ ASPT</div><div class="ft">sequential perm. test</div></div>
+        <span class="farrow">→</span>
+        <div class="fdiamond">◇ p &lt; α ?</div>
+        <span class="farrow">→</span>
+        <div class="fbox"><div class="fn">④ TreeSHAP + DSI</div><div class="ft">attribution · severity</div></div>
+        <span class="farrow">→</span>
+        <div class="fbox" style="border-color:#2D5BFF; background:rgba(45,91,255,.06);">
+          <div class="fn" style="color:#2D5BFF;">DRIFT ALERT</div><div class="ft">features · severity</div>
+        </div>
+      </div>
+      <!-- no branches -->
+      <div class="flow">
+        <div class="fbox" style="border-style:dashed; border-color:#E5484D;">
+          <div class="fn" style="color:#E5484D;">NO ✕</div><div class="fd" style="margin-top:2px;">Either gate fails → no drift · resume stream</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:24px; border-color:#2D5BFF; background:rgba(45,91,255,.04); padding:16px 20px;">
+      <div class="mono" style="font-weight:500; font-size:15px; color:#2D5BFF;">Two-stage gate ⇒ Type I error bound: &nbsp; Pr(AUC &gt; τ | H₀) · α ≤ α</div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:35%"></i></div><div>08 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9 — ASPT (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">03</span> / METHOD — ASPT</div>
+      <h2>Adaptive Sequential Permutation Test</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1fr 1fr; gap:36px;">
+      <div>
+        <div class="minilabel">Problem → Idea</div>
+        <div class="note" style="margin-bottom:8px;"><b>D3's fixed AUC threshold</b> → false alarms on autocorrelated streams.</div>
+        <div class="note" style="margin-bottom:16px;"><b>Idea:</b> permute labels iteratively; stop early when the evidence is decisive.</div>
+        <div class="rules">
+          <div class="rulebox pos">
+            <div class="rt pos">Early reject H₀ — confirm drift</div>
+            <div class="rf">c<sub>i</sub>=0, &nbsp;i ≥ B<sub>min</sub>, &nbsp;1/(i+1) &lt; α &nbsp;⇒&nbsp; p = 1/(i+1)</div>
+          </div>
+          <div class="rulebox neg">
+            <div class="rt neg">Early accept H₀ — no drift</div>
+            <div class="rf">c<sub>i</sub>/i &gt; 2α, &nbsp;i ≥ B<sub>min</sub> &nbsp;⇒&nbsp; p = (c<sub>i</sub>+1)/(i+1)</div>
+          </div>
+          <div class="rulebox base">
+            <div class="rt basec">Terminal</div>
+            <div class="rf">p = (c<sub>Bmax</sub>+1)/(B<sub>max</sub>+1)</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="minilabel">Permutations used per decision</div>
+        <!-- bar chart: D3 fixed 199, EADD drift 20, EADD stable 10 -->
+        <svg class="anim-barsx" width="540" height="270" viewBox="0 0 540 270">
+          <!-- axis -->
+          <line x1="150" y1="20" x2="150" y2="200" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="150" y1="200" x2="510" y2="200" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- scale: 0..199 over 150..500 (350px). 199 -> 500 -->
+          <!-- x gridlines -->
+          <text x="150" y="218" text-anchor="middle" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="326" y="218" text-anchor="middle" font-size="10.5" fill="#6B6F76">100</text>
+          <text x="502" y="218" text-anchor="middle" font-size="10.5" fill="#6B6F76">199</text>
+          <!-- dashed "fixed budget" at 199 -->
+          <line x1="502" y1="20" x2="502" y2="200" stroke="#8B8D98" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="502" y="14" text-anchor="middle" font-size="9.5" fill="#8B8D98" letter-spacing="1">FIXED BUDGET</text>
+          <!-- bars: y positions -->
+          <!-- D3 fixed 199 -> width 352 -->
+          <rect x="150" y="40" width="352" height="34" fill="#8B8D98"/>
+          <text x="146" y="62" text-anchor="end" font-size="12" fill="#0E0E10">D3 fixed</text>
+          <text x="496" y="61" text-anchor="end" font-size="12" fill="#FBFBF9" font-weight="500">199</text>
+          <!-- EADD drift 20 -> width 35.4 -->
+          <rect x="150" y="98" width="35.4" height="34" fill="#2D5BFF"/>
+          <text x="146" y="120" text-anchor="end" font-size="12" fill="#0E0E10">EADD drift</text>
+          <text x="193" y="119" font-size="12" fill="#0E0E10" font-weight="500">20</text>
+          <!-- EADD stable 10 -> width 17.7 -->
+          <rect x="150" y="156" width="17.7" height="34" fill="#2D5BFF" opacity="0.55"/>
+          <text x="146" y="178" text-anchor="end" font-size="12" fill="#0E0E10">EADD stable</text>
+          <text x="175" y="177" font-size="12" fill="#0E0E10" font-weight="500">10</text>
+          <text x="150" y="248" font-size="11" fill="#6B6F76">permutations →</text>
+        </svg>
+        <div style="margin-top:14px;"><span class="badge">90–95% fewer permutations · α preserved</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:39%"></i></div><div>09 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10 — SHAP + DSI (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">04</span> / METHOD — ATTRIBUTION</div>
+      <h2>SHAP attribution & severity</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1fr 1fr; gap:36px;">
+      <div>
+        <div class="minilabel">Which features</div>
+        <div class="eqline" style="margin-bottom:14px;">
+          φ̄<sub>j</sub> = (1/n) Σ<sub>i</sub> |φ<sub>j</sub><sup>(i)</sup>|<br>
+          s<sub>j</sub> = φ̄<sub>j</sub> / Σ<sub>k</sub> φ̄<sub>k</sub>
+        </div>
+        <div class="eq big" style="margin-bottom:14px;">DSI = AUC × (1 − H<sub>norm</sub>(s))</div>
+        <div class="eqline" style="font-size:14px;">
+          H<sub>norm</sub>(s) = −Σ<sub>j</sub> s<sub>j</sub> log₂ s<sub>j</sub> / log₂ d &nbsp;∈ [0,1]
+        </div>
+        <div class="note" style="margin-top:8px;">Dimensionality-invariant — comparable across feature counts.</div>
+      </div>
+      <div>
+        <div class="minilabel">Severity gradient</div>
+        <div class="sevbar" style="margin-bottom:6px;">
+          <div style="flex:30; background:#12A150;">LOW</div>
+          <div style="flex:30; background:#F5A623;">MODERATE</div>
+          <div style="flex:40; background:#E5484D;">CRITICAL</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:10.5px; color:#6B6F76; margin-bottom:18px;">
+          <span>0</span><span>0.3</span><span>0.6</span><span>1.0</span>
+        </div>
+        <table class="tiers">
+          <tr><td class="pos">Low &lt;0.3</td><td>Scheduled retrain</td></tr>
+          <tr><td class="warn">Moderate 0.3–0.6</td><td>Audit shared source</td></tr>
+          <tr><td class="neg">Critical &gt;0.6</td><td>Audit pipeline</td></tr>
+        </table>
+        <div class="note" style="margin-top:14px;">Heuristic tiers; require domain calibration.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:43%"></i></div><div>10 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 11 — SECTION 03 (dark)
+     ============================================================ -->
+<section class="slide dark divider">
+  <div class="ghost">03</div>
+  <div class="body">
+    <div class="secno">SECTION 03</div>
+    <h1>Experiments & Results</h1>
+    <div class="sub">What does EADD actually do?</div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:48%"></i></div><div>11 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 12 — Setup (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">05</span> / EXPERIMENTS</div>
+      <h2>Experimental setup</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="setup">
+      <div class="card">
+        <div class="ex">EXP 1</div>
+        <h3>Synthetic</h3>
+        <ul>
+          <li><span class="m">n=5,000</span>, <span class="m">d=5</span></li>
+          <li>4 drift patterns: abrupt / gradual / incremental / recurring</li>
+          <li>4 stable streams for false-alarm robustness</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="ex">EXP 2</div>
+        <h3>Real-world</h3>
+        <ul>
+          <li><span class="m">13 streams</span> · Lukats+ 2024</li>
+          <li>4 annotated INSECTS · 9 unannotated</li>
+          <li>Metrics: Precision / Recall / MTD</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="ex">EXP 3</div>
+        <h3>SHAP accuracy</h3>
+        <ul>
+          <li><span class="m">n=10,000</span>, <span class="m">d=10</span>; drift @ <span class="m">t=5,000</span></li>
+          <li>univariate / subset / multivariate</li>
+          <li>Metrics: P@k / R@k / DSI</li>
+        </ul>
+      </div>
+    </div>
+    <div class="strip">
+      <div>
+        <div class="sl">Baselines</div>
+        <div class="sv">D3 · BNDM · CSDDM · IBDD · OCDD · SPLL · UDetect</div>
+      </div>
+      <div style="border-left:1px solid var(--hair); padding-left:36px;">
+        <div class="sl">Config</div>
+        <div class="sv">LightGBM (50 trees) · N<sub>ref</sub>=500 · N<sub>cur</sub>=200 · M=50 · B<sub>max</sub>=199 · B<sub>min</sub>=10 · α=0.05 · τ=0.7</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:52%"></i></div><div>12 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 13 — Headline results (DARK moment)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">03</span> / HEADLINE RESULTS</div>
+      <h2 style="color:var(--snow);">What EADD delivers</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="bigstats" style="margin-top:50px;">
+      <div class="bs"><div class="bnum">4/4</div><div class="btick"></div><div class="bcap">Synthetic<br>drift coverage</div></div>
+      <div class="bs"><div class="bnum">0</div><div class="btick"></div><div class="bcap">False alarms<br>on stable streams</div></div>
+      <div class="bs"><div class="bnum">8×</div><div class="btick"></div><div class="bcap">Faster MTD vs D3<br>(incremental)</div></div>
+      <div class="bs"><div class="bnum">1.00</div><div class="btick"></div><div class="bcap">P@k = R@k<br>(univariate SHAP)</div></div>
+    </div>
+    <div style="position:absolute; left:84px; right:84px; bottom:108px;">
+      <div class="lead" style="font-size:21px; max-width:1000px;">EADD is the <span class="cobalt">only</span> detector achieving <b>both</b> full drift-type coverage <b>and</b> zero false alarms — while answering <i>which</i> and <i>how severe</i>, in one streaming pipeline.</div>
+      <div class="mono" style="font-size:12px; color:var(--nightmuted); margin-top:18px; letter-spacing:.04em;">Mann–Whitney U vs D3 on autocorrelated streams: p = 0.0101 (τ = 0.6).</div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:57%"></i></div><div>13 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 14 — Synthetic coverage vs FA (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">06</span> / RESULTS — SYNTHETIC</div>
+      <h2>Coverage vs false alarms</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.5fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">Mean false alarms per type (bars) · coverage /4 (○)</div>
+        <!-- combined chart -->
+        <svg class="anim-bars" width="660" height="320" viewBox="0 0 660 320">
+          <!-- axes -->
+          <line x1="50" y1="20" x2="50" y2="250" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="50" y1="250" x2="640" y2="250" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- left y (FA) ticks: 0..50 -> 250..20 (230px) -->
+          <text x="42" y="254" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="42" y="139" text-anchor="end" font-size="10.5" fill="#6B6F76">25</text>
+          <text x="42" y="24" text-anchor="end" font-size="10.5" fill="#6B6F76">50</text>
+          <!-- gridlines -->
+          <line x1="50" y1="135" x2="640" y2="135" stroke="#F2F1ED" stroke-width="1"/>
+          <!-- bars: 8 detectors. plot area 60..630 (570px), 8 groups -->
+          <!-- FA scale: value/50 * 230 -->
+          <!-- EADD 0.00, BNDM 4.75, CSDDM 5.50, IBDD 46.25, OCDD 17.50, D3 0.00, SPLL 0.00, UDetect 0 -->
+          <!-- positions x centers: 86,154,222,290,358,426,494,562 ; bar width 36 -->
+          <!-- EADD 0 -> h0 -->
+          <rect x="68" y="248" width="36" height="2" fill="#2D5BFF"/>
+          <text x="86" y="248" text-anchor="middle" font-size="11" fill="#2D5BFF" font-weight="500">0.00</text>
+          <!-- BNDM 4.75 -> h21.85 -->
+          <rect x="136" y="228" width="36" height="22" fill="#8B8D98"/>
+          <text x="154" y="222" text-anchor="middle" font-size="10" fill="#6B6F76">4.75</text>
+          <!-- CSDDM 5.50 -> h25.3 -->
+          <rect x="204" y="225" width="36" height="25" fill="#8B8D98"/>
+          <text x="222" y="219" text-anchor="middle" font-size="10" fill="#6B6F76">5.50</text>
+          <!-- IBDD 46.25 -> h212.75 -->
+          <rect x="272" y="37" width="36" height="213" fill="#E5484D"/>
+          <text x="318" y="48" text-anchor="start" font-size="10" fill="#6B6F76">46.25</text>
+          <!-- OCDD 17.50 -> h80.5 -->
+          <rect x="340" y="170" width="36" height="80" fill="#F5A623"/>
+          <text x="358" y="164" text-anchor="middle" font-size="10" fill="#6B6F76">17.50</text>
+          <!-- D3 0 -->
+          <rect x="408" y="248" width="36" height="2" fill="#8B8D98"/>
+          <text x="426" y="240" text-anchor="middle" font-size="10" fill="#6B6F76">0.00</text>
+          <!-- SPLL 0 -->
+          <rect x="476" y="248" width="36" height="2" fill="#8B8D98"/>
+          <text x="494" y="240" text-anchor="middle" font-size="10" fill="#6B6F76">0.00</text>
+          <!-- UDetect 0 -->
+          <rect x="544" y="248" width="36" height="2" fill="#8B8D98"/>
+          <text x="562" y="240" text-anchor="middle" font-size="10" fill="#6B6F76">0</text>
+          <!-- coverage markers (second axis /4). cov4 -> y=58, cov2 -> y=152, cov0 -> y=246 -->
+          <!-- EADD cov4 -->
+          <circle cx="86" cy="58" r="5" fill="none" stroke="#2D5BFF" stroke-width="2"/>
+          <!-- BNDM cov4 -->
+          <circle cx="154" cy="58" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- CSDDM cov4 -->
+          <circle cx="222" cy="58" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- IBDD cov4 (paper halo so the marker sits cleanly on the tall bar) -->
+          <circle cx="290" cy="58" r="8.5" fill="#FBFBF9"/>
+          <circle cx="290" cy="58" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- OCDD cov4 -->
+          <circle cx="358" cy="58" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- D3 cov2 -->
+          <circle cx="426" cy="152" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- SPLL cov2 -->
+          <circle cx="494" cy="152" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- UDetect cov0 -->
+          <circle cx="562" cy="246" r="5" fill="none" stroke="#0E0E10" stroke-width="1.5"/>
+          <!-- coverage dashed connecting line (subtle) -->
+          <!-- x labels -->
+          <text x="86" y="268" text-anchor="middle" font-size="10.5" fill="#2D5BFF" font-weight="500">EADD</text>
+          <text x="154" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">BNDM</text>
+          <text x="222" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">CSDDM</text>
+          <text x="290" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">IBDD</text>
+          <text x="358" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">OCDD</text>
+          <text x="426" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">D3</text>
+          <text x="494" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">SPLL</text>
+          <text x="562" y="268" text-anchor="middle" font-size="10" fill="#6B6F76">UDetect</text>
+          <!-- right axis coverage scale -->
+          <text x="652" y="62" text-anchor="end" font-size="10" fill="#6B6F76">4</text>
+          <text x="652" y="156" text-anchor="end" font-size="10" fill="#6B6F76">2</text>
+          <text x="652" y="250" text-anchor="end" font-size="10" fill="#6B6F76">0</text>
+          <text x="50" y="296" font-size="10.5" fill="#6B6F76">bars = mean FA · ○ = coverage (right axis)</text>
+        </svg>
+      </div>
+      <div>
+        <div class="takeaway" style="margin-top:30px;"><b>EADD: 4/4 coverage AND 0 false alarms.</b></div>
+        <div class="note" style="margin-top:18px;">BNDM / CSDDM / IBDD / OCDD also hit 4/4 — but pay a heavy false-alarm cost.</div>
+        <div class="note" style="margin-top:14px;">D3 / SPLL keep 0 FA only by missing half the drift types.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:61%"></i></div><div>14 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 15 — INSECTS faster detection (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">06</span> / RESULTS — INSECTS</div>
+      <h2>Faster detection on real streams</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.4fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">Mean Time to Detection — lower is better</div>
+        <svg class="anim-bars" width="620" height="300" viewBox="0 0 620 300">
+          <line x1="56" y1="20" x2="56" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="230" x2="600" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- scale: 0..350 over 230..20 (210px). val/350*210 -->
+          <text x="48" y="234" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="48" y="129" text-anchor="end" font-size="10.5" fill="#6B6F76">175</text>
+          <text x="48" y="24" text-anchor="end" font-size="10.5" fill="#6B6F76">350</text>
+          <line x1="56" y1="125" x2="600" y2="125" stroke="#F2F1ED" stroke-width="1"/>
+          <!-- groups: Abrupt(135/155.5), IncrAbrupt(33/272.5), IncrRecur(133/323.5) -->
+          <!-- group centers: 160, 330, 500 ; bar width 46, gap 8 -->
+          <!-- Abrupt EADD 135 -> h81 -->
+          <rect x="118" y="149" width="46" height="81" fill="#12A150"/>
+          <text x="141" y="143" text-anchor="middle" font-size="10" fill="#6B6F76">135</text>
+          <!-- Abrupt D3 155.5 -> h93.3 -->
+          <rect x="172" y="137" width="46" height="93" fill="#8B8D98"/>
+          <text x="195" y="131" text-anchor="middle" font-size="10" fill="#6B6F76">155.5</text>
+          <text x="168" y="248" text-anchor="middle" font-size="11" fill="#0E0E10">Abrupt</text>
+          <!-- IncrAbrupt EADD 33 -> h19.8 -->
+          <rect x="288" y="210" width="46" height="20" fill="#12A150"/>
+          <text x="311" y="204" text-anchor="middle" font-size="10" fill="#6B6F76">33</text>
+          <!-- IncrAbrupt D3 272.5 -> h163.5 -->
+          <rect x="342" y="67" width="46" height="163" fill="#8B8D98"/>
+          <text x="365" y="61" text-anchor="middle" font-size="10" fill="#6B6F76">272.5</text>
+          <text x="338" y="248" text-anchor="middle" font-size="11" fill="#0E0E10">IncrAbrupt</text>
+          <!-- IncrRecur EADD 133 -> h79.8 -->
+          <rect x="458" y="150" width="46" height="80" fill="#12A150"/>
+          <text x="481" y="144" text-anchor="middle" font-size="10" fill="#6B6F76">133</text>
+          <!-- IncrRecur D3 323.5 -> h194 -->
+          <rect x="512" y="36" width="46" height="194" fill="#8B8D98"/>
+          <text x="535" y="30" text-anchor="middle" font-size="10" fill="#6B6F76">323.5</text>
+          <text x="508" y="248" text-anchor="middle" font-size="11" fill="#0E0E10">IncrRecur</text>
+          <!-- legend -->
+          <rect x="56" y="270" width="14" height="10" fill="#12A150"/>
+          <text x="76" y="279" font-size="10.5" fill="#6B6F76">EADD</text>
+          <rect x="146" y="270" width="14" height="10" fill="#8B8D98"/>
+          <text x="166" y="279" font-size="10.5" fill="#6B6F76">D3</text>
+        </svg>
+      </div>
+      <div>
+        <div class="tiles" style="flex-direction:column; gap:12px;">
+          <div class="tile"><div class="tn">8×</div><div class="td">faster · IncrAbrupt 33 vs 272.5</div></div>
+          <div class="tile"><div class="tn">2.4×</div><div class="td">faster · IncrRecur 133 vs 323.5</div></div>
+          <div class="tile"><div class="tn">13%</div><div class="td">faster · Abrupt 135 vs 155.5</div></div>
+        </div>
+        <div class="note" style="margin-top:18px;">EADD beats D3 on MTD in all three jointly detected INSECTS streams. <b>InsectsGradual missed by both.</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:65%"></i></div><div>15 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 16 — SHAP attribution (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">06</span> / RESULTS — SHAP</div>
+      <h2>Attribution: P@k = R@k = 1.0</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1fr 1.15fr; gap:40px;">
+      <div>
+        <div class="minilabel">Top-feature SHAP share (%)</div>
+        <svg class="anim-bars" width="520" height="290" viewBox="0 0 520 290">
+          <line x1="56" y1="20" x2="56" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="220" x2="500" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- scale 0..60 -> 220..20 (200px). val/60*200 -->
+          <text x="48" y="224" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="48" y="124" text-anchor="end" font-size="10.5" fill="#6B6F76">30</text>
+          <text x="48" y="24" text-anchor="end" font-size="10.5" fill="#6B6F76">60</text>
+          <!-- dashed uniform 10% -> y = 220 - 10/60*200 = 186.7 -->
+          <line x1="56" y1="187" x2="500" y2="187" stroke="#8B8D98" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="500" y="182" text-anchor="end" font-size="9.5" fill="#8B8D98">uniform 10%</text>
+          <!-- bars centers 130,275,420 width 70 -->
+          <!-- Univariate 52.3 -> h174.3 -->
+          <rect x="95" y="46" width="70" height="174" fill="#2D5BFF"/>
+          <text x="130" y="40" text-anchor="middle" font-size="11" fill="#0E0E10" font-weight="500">52.3</text>
+          <!-- Subset 24.5 -> h81.7 -->
+          <rect x="240" y="138" width="70" height="82" fill="#2D5BFF" opacity="0.65"/>
+          <text x="275" y="132" text-anchor="middle" font-size="11" fill="#0E0E10" font-weight="500">24.5</text>
+          <!-- Multivariate 14.6 -> h48.7 -->
+          <rect x="385" y="171" width="70" height="49" fill="#2D5BFF" opacity="0.4"/>
+          <text x="420" y="165" text-anchor="middle" font-size="11" fill="#0E0E10" font-weight="500">14.6</text>
+          <text x="130" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">Univariate</text>
+          <text x="275" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">Subset</text>
+          <text x="420" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">Multivariate</text>
+        </svg>
+      </div>
+      <div>
+        <table class="dtable" style="margin-top:8px;">
+          <thead>
+            <tr><th>Scenario</th><th>AUC</th><th>Top feat.</th><th>Share</th><th>DSI</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Univariate (1/10)</td><td>0.784</td><td>F3</td><td>52.3%</td><td>0.193</td></tr>
+            <tr><td>Subset (3/10)</td><td>0.809</td><td>F5</td><td>24.5%</td><td>0.096</td></tr>
+            <tr><td>Multivariate (10/10)</td><td>0.806</td><td>F2</td><td>14.6%</td><td>0.016</td></tr>
+          </tbody>
+        </table>
+        <div class="note" style="margin-top:22px;">DSI orders by concentration: <b>univariate &gt; subset &gt; multivariate</b> — consistent with H<sub>norm</sub>.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:70%"></i></div><div>16 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 17 — False-alarm robustness (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">06</span> / RESULTS — ROBUSTNESS</div>
+      <h2>Zero false alarms on stable streams</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.5fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">False alarms per stable stream type — lower is better</div>
+        <svg class="anim-bars" width="660" height="300" viewBox="0 0 660 300">
+          <line x1="56" y1="20" x2="56" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="230" x2="645" y2="230" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- scale 0..90 -> 230..20 (210px). val/90*210 -->
+          <text x="48" y="234" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="48" y="129" text-anchor="end" font-size="10.5" fill="#6B6F76">45</text>
+          <text x="48" y="24" text-anchor="end" font-size="10.5" fill="#6B6F76">90</text>
+          <line x1="56" y1="125" x2="645" y2="125" stroke="#F2F1ED" stroke-width="1"/>
+          <!-- 4 groups, each 3 bars (EADD pos, D3τ0.6 neg, D3τ0.7 base). bar w=28 gap2 -->
+          <!-- Gaussian 0/0/0 ; Autocorr 0/87.4/54.6 ; Hetero 0/10.4/0 ; Corr 0/10.0/0 -->
+          <!-- group centers: 145, 295, 445, 590 -->
+          <!-- Gaussian -->
+          <rect x="103" y="228" width="28" height="2" fill="#12A150"/>
+          <rect x="133" y="228" width="28" height="2" fill="#E5484D"/>
+          <rect x="163" y="228" width="28" height="2" fill="#8B8D98"/>
+          <text x="147" y="246" text-anchor="middle" font-size="10" fill="#0E0E10">Gaussian iid</text>
+          <text x="147" y="222" text-anchor="middle" font-size="9.5" fill="#6B6F76">0 / 0 / 0</text>
+          <!-- Autocorrelated: EADD0, D3τ0.6 87.4 -> h203.9, D3τ0.7 54.6 -> h127.4 -->
+          <rect x="253" y="228" width="28" height="2" fill="#12A150"/>
+          <text x="267" y="224" text-anchor="middle" font-size="9.5" fill="#12A150" font-weight="500">0</text>
+          <rect x="283" y="26" width="28" height="204" fill="#E5484D"/>
+          <text x="297" y="20" text-anchor="middle" font-size="9.5" fill="#6B6F76">87.4</text>
+          <rect x="313" y="103" width="28" height="127" fill="#8B8D98"/>
+          <text x="327" y="97" text-anchor="middle" font-size="9.5" fill="#6B6F76">54.6</text>
+          <text x="297" y="246" text-anchor="middle" font-size="10" fill="#0E0E10">Autocorr AR(1)</text>
+          <!-- Hetero: 0/10.4/0. 10.4 -> h24.3 -->
+          <rect x="403" y="228" width="28" height="2" fill="#12A150"/>
+          <rect x="433" y="206" width="28" height="24" fill="#E5484D"/>
+          <text x="447" y="200" text-anchor="middle" font-size="9.5" fill="#6B6F76">10.4</text>
+          <rect x="463" y="228" width="28" height="2" fill="#8B8D98"/>
+          <text x="447" y="246" text-anchor="middle" font-size="10" fill="#0E0E10">Heterosced.</text>
+          <!-- Correlated: 0/10.0/0. 10 -> h23.3 -->
+          <rect x="548" y="228" width="28" height="2" fill="#12A150"/>
+          <rect x="578" y="207" width="28" height="23" fill="#E5484D"/>
+          <text x="592" y="201" text-anchor="middle" font-size="9.5" fill="#6B6F76">10.0</text>
+          <rect x="608" y="228" width="28" height="2" fill="#8B8D98"/>
+          <text x="592" y="246" text-anchor="middle" font-size="10" fill="#0E0E10">Correlated ρ=0.7</text>
+          <!-- legend -->
+          <rect x="56" y="276" width="14" height="10" fill="#12A150"/><text x="76" y="285" font-size="10" fill="#6B6F76">EADD</text>
+          <rect x="146" y="276" width="14" height="10" fill="#E5484D"/><text x="166" y="285" font-size="10" fill="#6B6F76">D3 τ=0.6</text>
+          <rect x="256" y="276" width="14" height="10" fill="#8B8D98"/><text x="276" y="285" font-size="10" fill="#6B6F76">D3 τ=0.7</text>
+        </svg>
+      </div>
+      <div>
+        <div class="takeaway" style="margin-top:28px;"><b>0 false alarms on all 4 stable stream types.</b></div>
+        <div class="note" style="margin-top:18px;">Mann–Whitney U vs D3 (τ=0.6): <span class="mono">p = 0.0101</span>.</div>
+        <div class="note" style="margin-top:14px;">ASPT suppresses <b>54.6</b> spurious D3 detections on autocorrelated AR(1) at τ=0.7.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:74%"></i></div><div>17 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 18 — SECTION 04 (dark)
+     ============================================================ -->
+<section class="slide dark divider">
+  <div class="ghost">04</div>
+  <div class="body">
+    <div class="secno">SECTION 04</div>
+    <h1>Ablation & Cost</h1>
+    <div class="sub">Where does the gain come from?</div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:78%"></i></div><div>18 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 19 — Where does the gain come from (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">07</span> / ABLATION</div>
+      <h2>Where does the gain come from?</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.15fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">Wall-clock (s) vs dimensionality d</div>
+        <svg class="anim-line" width="540" height="290" viewBox="0 0 540 290">
+          <line x1="56" y1="20" x2="56" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="220" x2="510" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- scale 0..25 -> 220..30 (190px). val/25*190 ; y=220-val/25*190 -->
+          <text x="48" y="224" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="48" y="129" text-anchor="end" font-size="10.5" fill="#6B6F76">12.5</text>
+          <text x="48" y="34" text-anchor="end" font-size="10.5" fill="#6B6F76">25</text>
+          <!-- x: d=10,20,50 at x=110,290,470 -->
+          <text x="110" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">d=10</text>
+          <text x="290" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">d=20</text>
+          <text x="470" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">d=50</text>
+          <!-- EADD-Full 6.93/10.76/23.11 -> y: 167.3,138.2,44.4 -->
+          <polyline class="series" fill="none" stroke="#2D5BFF" stroke-width="2.5" points="110,167.3 290,138.2 470,44.4"/>
+          <circle cx="110" cy="167.3" r="4" fill="#2D5BFF"/><circle cx="290" cy="138.2" r="4" fill="#2D5BFF"/><circle cx="470" cy="44.4" r="4" fill="#2D5BFF"/>
+          <text x="478" y="44" font-size="10" fill="#2D5BFF" font-weight="500">23.11</text>
+          <!-- EADD-ASPT 6.68/10.43/22.64 -> y: 169.2,140.7,47.0 -->
+          <polyline fill="none" stroke="#2D5BFF" stroke-width="2" stroke-dasharray="5 4" opacity="0.6" points="110,169.2 290,140.7 470,47.0"/>
+          <circle cx="470" cy="47.0" r="3.5" fill="none" stroke="#2D5BFF" stroke-width="1.5"/>
+          <!-- D3 0.07/0.09/0.14 -> y: ~219.5 all (flat near 0) -->
+          <polyline fill="none" stroke="#8B8D98" stroke-width="2" points="110,219.5 290,219.3 470,218.9"/>
+          <circle cx="470" cy="218.9" r="3.5" fill="#8B8D98"/>
+          <text x="478" y="216" font-size="10" fill="#8B8D98">0.14</text>
+          <!-- inline legend -->
+          <rect x="56" y="262" width="14" height="8" fill="#2D5BFF"/><text x="76" y="270" font-size="10" fill="#6B6F76">EADD-Full</text>
+          <rect x="176" y="265" width="14" height="2" fill="#2D5BFF" opacity="0.6"/><text x="196" y="270" font-size="10" fill="#6B6F76">EADD−ASPT</text>
+          <rect x="316" y="262" width="14" height="8" fill="#8B8D98"/><text x="336" y="270" font-size="10" fill="#6B6F76">D3</text>
+        </svg>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px; padding-top:24px;">
+        <div class="card" style="padding:16px 18px; border-left:3px solid #12A150;">
+          <div class="note"><b>Coverage 4/4 vs D3's 2/4</b> → from LightGBM (non-linear C2ST); EADD−ASPT also reaches 4/4.</div>
+        </div>
+        <div class="card" style="padding:16px 18px; border-left:3px solid #2D5BFF;">
+          <div class="note"><b>0 false alarms on AR(1)</b> → from ASPT; suppresses 54.6 spurious D3 detections.</div>
+        </div>
+        <div class="card" style="padding:16px 18px; border-left:3px solid #F5A623;">
+          <div class="note"><b>Cost trade-off ~50–160× D3 wall-clock</b> — dominated by LightGBM, not ASPT (&lt;5%).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:83%"></i></div><div>19 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 20 — SECTION 05 (dark)
+     ============================================================ -->
+<section class="slide dark divider">
+  <div class="ghost">05</div>
+  <div class="body">
+    <div class="secno">SECTION 05</div>
+    <h1>Limits & Outlook</h1>
+    <div class="sub">What EADD cannot answer — yet.</div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:87%"></i></div><div>20 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 21 — Limitations & future work (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">08</span> / OUTLOOK</div>
+      <h2>Limitations & future work</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="limgrid">
+      <div>
+        <h3>Limitations</h3>
+        <ul>
+          <li>Wall-clock <span class="m">~50–160× D3</span> — LightGBM retrains every <span class="m">M=50</span> steps.</li>
+          <li>Multiple testing over time (~600 tests / 30K samples). Bonferroni α′ ≈ <span class="m">8.3×10⁻⁵</span> is below ASPT's 1/(B<sub>max</sub>+1) = <span class="m">0.005</span> floor → zero-FA result is empirical, not theoretically guaranteed.</li>
+          <li>DSI tiers heuristic — never triggered above LOW in experiments.</li>
+          <li>SHAP is correlational, not causal.</li>
+          <li>No isolation of reservoir sampling vs window config.</li>
+        </ul>
+      </div>
+      <div class="future">
+        <h3>Future work</h3>
+        <ul>
+          <li>Anytime-valid <b>e-values</b> for streaming FWER.</li>
+          <li>Causal attribution — Budhathoki+ AISTATS 2021.</li>
+          <li>Multi-domain DSI calibration.</li>
+          <li>Adversarial robustness.</li>
+          <li>Per-feature operating curves under correlation → feature-group SHAP.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:91%"></i></div><div>21 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 22 — Conclusion (DARK moment)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">·</span> CONCLUSION</div>
+      <h2 style="color:var(--snow);">One pipeline, four questions answered</h2>
+      <div class="rule"></div>
+    </div>
+    <div style="margin-top:22px;">
+      <span class="pill">EADD answers <span class="k">WHETHER · WHEN · WHICH · HOW SEVERE</span> — in one pipeline.</span>
+    </div>
+    <div class="conc-stats">
+      <div class="cs"><div class="cn">4/4</div><div class="cc">coverage</div></div>
+      <div class="cs"><div class="cn">0</div><div class="cc">false alarms</div></div>
+      <div class="cs"><div class="cn">8×</div><div class="cc">faster MTD</div></div>
+      <div class="cs"><div class="cn">1.00</div><div class="cc">P@k = R@k</div></div>
+    </div>
+    <div class="conc-cols">
+      <div>
+        <h4>What we built</h4>
+        <ul>
+          <li>ASPT + H<sub>pred</sub>: rigorous confirmation, 90–95% permutation savings.</li>
+          <li>SHAP + DSI: feature-level diagnosis + severity.</li>
+          <li>Benchmark vs 7 unsupervised detectors.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>What it gives MLOps</h4>
+        <ul>
+          <li>Reliable alarms on autocorrelated production streams.</li>
+          <li>Actionable diagnoses — not just binary flags.</li>
+          <li>Severity-tiered prescriptions.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:96%"></i></div><div>22 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 23 — Thank you (dark)
+     ============================================================ -->
+<section class="slide dark">
+  <div class="ty-wrap">
+    <div class="title-eyebrow" style="margin-bottom:8px;">JCSSE 2026<span class="dot">·</span>BANGKOK</div>
+    <h1 class="ty-main">Thank you.</h1>
+    <div class="ty-sub">Questions &amp; discussion welcome.</div>
+    <div class="ty-rule"></div>
+    <div class="ty-info">
+      <div><span class="lbl">PRESENTER</span> Nusrat Begum</div>
+      <div><span class="lbl">EMAIL</span> <span class="cobalt">nusrat.beg@student.mahidol.ac.th</span></div>
+      <div><span class="lbl">RESOURCES</span> Code + paper available at the project repository.</div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:100%"></i></div><div>23 / 23</div></div></div>
+</section>
+
+<!-- ============================================================
+     BACKUP B1 — Runtime scaling vs N_cur (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">B1</span> / BACKUP</div>
+      <h2>Runtime scaling vs window N<sub>cur</sub></h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.15fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">Wall-clock (s) vs N<sub>cur</sub> · log-x</div>
+        <svg class="anim-line" width="540" height="290" viewBox="0 0 540 290">
+          <line x1="56" y1="20" x2="56" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="56" y1="220" x2="510" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- y 0..12 -> 220..30 (190px). y=220-val/12*190 -->
+          <text x="48" y="224" text-anchor="end" font-size="10.5" fill="#6B6F76">0</text>
+          <text x="48" y="129" text-anchor="end" font-size="10.5" fill="#6B6F76">6</text>
+          <text x="48" y="34" text-anchor="end" font-size="10.5" fill="#6B6F76">12</text>
+          <!-- log x: N=100,200,500,1000 at x=100,210,375,470 (approx log spacing) -->
+          <text x="100" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">100</text>
+          <text x="210" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">200</text>
+          <text x="375" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">500</text>
+          <text x="470" y="240" text-anchor="middle" font-size="10.5" fill="#6B6F76">1000</text>
+          <!-- EADD-Full 5.83/6.91/10.52/11.22 -> y:127.7,110.6,53.4,42.6 -->
+          <polyline class="series" fill="none" stroke="#2D5BFF" stroke-width="2.5" points="100,127.7 210,110.6 375,53.4 470,42.6"/>
+          <circle cx="100" cy="127.7" r="4" fill="#2D5BFF"/><circle cx="210" cy="110.6" r="4" fill="#2D5BFF"/><circle cx="375" cy="53.4" r="4" fill="#2D5BFF"/><circle cx="470" cy="42.6" r="4" fill="#2D5BFF"/>
+          <text x="478" y="42" font-size="10" fill="#2D5BFF" font-weight="500">11.22</text>
+          <!-- EADD-ASPT 5.62/6.68/10.23/10.58 -> y:131.0,114.2,57.9,52.4 -->
+          <polyline fill="none" stroke="#2D5BFF" stroke-width="2" stroke-dasharray="5 4" opacity="0.6" points="100,131.0 210,114.2 375,57.9 470,52.4"/>
+          <!-- D3 0.11/0.07/0.04/0.03 -> ~219.3 flat -->
+          <polyline fill="none" stroke="#8B8D98" stroke-width="2" points="100,218.3 210,218.9 375,219.4 470,219.5"/>
+          <circle cx="470" cy="219.5" r="3.5" fill="#8B8D98"/>
+          <text x="478" y="216" font-size="10" fill="#8B8D98">0.03</text>
+          <rect x="56" y="262" width="14" height="8" fill="#2D5BFF"/><text x="76" y="270" font-size="10" fill="#6B6F76">EADD-Full</text>
+          <rect x="176" y="265" width="14" height="2" fill="#2D5BFF" opacity="0.6"/><text x="196" y="270" font-size="10" fill="#6B6F76">EADD−ASPT</text>
+          <rect x="316" y="262" width="14" height="8" fill="#8B8D98"/><text x="336" y="270" font-size="10" fill="#6B6F76">D3</text>
+        </svg>
+      </div>
+      <div style="padding-top:24px;">
+        <ul class="limgrid future" style="display:block;"><h3 style="margin-bottom:14px;">Notes</h3>
+          <li>N 200→1000: EADD grows only <span class="m">1.6×</span>.</li>
+          <li>LightGBM sub-linear in N, near-linear in d.</li>
+          <li>ASPT overhead <span class="m">&lt;5%</span>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:100%"></i></div><div>B1 / BACKUP</div></div></div>
+</section>
+
+<!-- ============================================================
+     BACKUP B2 — Correlated features (light)
+     ============================================================ -->
+<section class="slide">
+  <div class="frame">
+    <div class="head">
+      <div class="kicker"><span class="accent">B2</span> / BACKUP</div>
+      <h2>Correlated features (d=10)</h2>
+      <div class="rule"></div>
+    </div>
+    <div class="cols c2" style="grid-template-columns:1.15fr 1fr; gap:40px;">
+      <div>
+        <div class="minilabel">First detection time t vs correlation ρ</div>
+        <svg class="anim-bars" width="540" height="290" viewBox="0 0 540 290">
+          <line x1="64" y1="20" x2="64" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <line x1="64" y1="220" x2="510" y2="220" stroke="#E6E5E1" stroke-width="1"/>
+          <!-- y range 4000..4150 -> 220..30. We'll show a compressed window. baseline 4000.
+               y = 220 - (val-4000)/150*190 -->
+          <text x="56" y="224" text-anchor="end" font-size="10.5" fill="#6B6F76">4000</text>
+          <text x="56" y="129" text-anchor="end" font-size="10.5" fill="#6B6F76">4075</text>
+          <text x="56" y="34" text-anchor="end" font-size="10.5" fill="#6B6F76">4150</text>
+          <!-- D3 line at 4117 -> y=220-117/150*190=71.8 (dashed reference) -->
+          <line x1="64" y1="71.8" x2="510" y2="71.8" stroke="#8B8D98" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <text x="510" y="67" text-anchor="end" font-size="10" fill="#8B8D98">D3 = 4117</text>
+          <!-- EADD bars at ρ=0,0.5,0.9 all 4099 -> y=220-99/150*190=94.6 ; h=125.4 -->
+          <!-- centers 150,290,430 width 64 -->
+          <rect x="118" y="94.6" width="64" height="125.4" fill="#12A150"/>
+          <text x="150" y="88" text-anchor="middle" font-size="10.5" fill="#0E0E10" font-weight="500">4099</text>
+          <rect x="258" y="94.6" width="64" height="125.4" fill="#12A150"/>
+          <text x="290" y="88" text-anchor="middle" font-size="10.5" fill="#0E0E10" font-weight="500">4099</text>
+          <rect x="398" y="94.6" width="64" height="125.4" fill="#12A150"/>
+          <text x="430" y="88" text-anchor="middle" font-size="10.5" fill="#0E0E10" font-weight="500">4099</text>
+          <text x="150" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">ρ=0</text>
+          <text x="290" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">ρ=0.5</text>
+          <text x="430" y="238" text-anchor="middle" font-size="10.5" fill="#6B6F76">ρ=0.9</text>
+          <rect x="64" y="262" width="14" height="10" fill="#12A150"/><text x="84" y="271" font-size="10" fill="#6B6F76">EADD</text>
+          <rect x="154" y="266" width="14" height="2" fill="#8B8D98"/><text x="174" y="271" font-size="10" fill="#6B6F76">D3</text>
+        </svg>
+      </div>
+      <div style="padding-top:24px;">
+        <ul class="limgrid future" style="display:block;"><h3 style="margin-bottom:14px;">Notes</h3>
+          <li>Cholesky-mixed Gaussian; <span class="m">+2σ</span> shift in 3 features at <span class="m">t=4000</span>.</li>
+          <li>EADD robust to correlation; stable correlated streams give <span class="m">0 FA</span>.</li>
+          <li>SHAP under correlation → interpret at feature-group granularity.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><div>EADD</div><div class="pg"><div class="progress"><i style="width:100%"></i></div><div>B2 / BACKUP</div></div></div>
+</section>
+
+<script src="deck.js"></script>
+</body>
+</html>
