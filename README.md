@@ -4,8 +4,8 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 
 **Paper title:** *Enhanced Adversarial Drift Detection for MLOps Feature Monitoring*
 **Paper #:** 1571280455 (EDAS) · 2026172661 (IEEE PDF eXpress, Conference ID 68839X)
-**Status:** Published in the JCSSE 2026 proceedings on IEEE Xplore: https://ieeexplore.ieee.org/xpl/conhome/11596549/proceeding
-**Thesis:** this paper is the conference publication of the Master's thesis in [Nusrat-Thesis-Mahidol-University](https://github.com/NusratBegum/Nusrat-Thesis-Mahidol-University). The thesis reruns the real-world experiments with three seeds and drops the Drift Severity Index, so some numbers differ.
+**Status:** Published in IEEE Xplore: https://ieeexplore.ieee.org/document/11596765 ([proceedings](https://ieeexplore.ieee.org/xpl/conhome/11596549/proceeding))
+**Thesis:** this paper is the conference publication of the Master's thesis in [Nusrat-Thesis-Mahidol-University](https://github.com/NusratBegum/Nusrat-Thesis-Mahidol-University). The thesis re-evaluates EADD under a stricter protocol (D3 with the same LightGBM classifier and windows, real annotated streams only, five seeds, missed drifts counted), so its results and conclusions differ from this paper. The paper is a published record: do not edit its content.
 
 📅 **Conference:** 24–27 June 2026
 📍 **Location:** The Royal River Hotel, Bangkok, Thailand
@@ -15,12 +15,14 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 
 | File | Purpose |
 |---|---|
-| `jcsse2026_full_paper.tex` | LaTeX source (camera-ready, 6 pages, IEEEtran A4) |
-| `jcsse2026_full_paper.pdf` | Locally compiled PDF |
+| `jcsse2026_full_paper.tex` / `.pdf` | LaTeX source and compiled PDF (camera-ready, 6 pages, IEEEtran A4) |
 | `2026172661.pdf` | **IEEE PDF eXpress-certified PDF** (the file uploaded to EDAS) |
-| `jcsse2026_slides.tex` / `.pdf` | Presentation slides for the conference talk |
+| `jcsse2026_final_presentation.pdf` | Slides presented at the conference (16 slides) |
+| `EADD_speaker_notes.md`, `EADD_footnotes.md`, `EADD_slide_changes.md` | Notes for the talk |
+| `figures/` | Paper figures and `make_figures.py` |
 | `CopyrightReceipt.pdf` | Signed IEEE Electronic Copyright Form (eCF) receipt |
 | `IEEEtran.cls` | IEEE Conference Proceedings class (camera-ready 2018 template) |
+| `archive/slides/` | Earlier slide drafts (v1 to v6); not maintained |
 
 ## Format Requirements (JCSSE camera-ready)
 
