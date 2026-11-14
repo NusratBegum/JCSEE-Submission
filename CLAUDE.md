@@ -23,4 +23,4 @@ python figures/make_figures.py        # regenerates the paper figures
 
 `figures/` holds the paper figures and their script. `jcsse2026_final_presentation.pdf` is the deck that was presented; `EADD_speaker_notes.md`, `EADD_footnotes.md` and `EADD_slide_changes.md` belong to it. `archive/slides/` holds earlier slide drafts and is not maintained (their relative paths to `figures/` no longer resolve).
 
-The experiment code that produced the paper's numbers is in the sibling repo `unsupervised-concept-drift-detection` (`experiment1..7_*.py`, `experiment_camera_ready.py`, `experiments/results/`).
+The experiment code that produced the paper's numbers is in the sibling repo `unsupervised-concept-drift-detection` (`legacy/experiment1..7_*.py`, `legacy/experiment_camera_ready.py`, `experiments/results/`).
