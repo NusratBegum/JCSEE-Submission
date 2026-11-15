@@ -5,7 +5,7 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 **Paper title:** *Enhanced Adversarial Drift Detection for MLOps Feature Monitoring*
 **Paper #:** 1571280455 (EDAS) · 2026172661 (IEEE PDF eXpress, Conference ID 68839X)
 **Status:** Published in IEEE Xplore: https://ieeexplore.ieee.org/document/11596765 ([proceedings](https://ieeexplore.ieee.org/xpl/conhome/11596549/proceeding))
-**Thesis:** this paper is the conference publication of the Master's thesis in [Nusrat-Thesis-Mahidol-University](https://github.com/NusratBegum/Nusrat-Thesis-Mahidol-University). The thesis re-evaluates EADD under a stricter protocol (D3 with the same LightGBM classifier and windows, real annotated streams only, five seeds, missed drifts counted), so its results and conclusions differ from this paper. The paper is a published record: do not edit its content.
+**Thesis:** this paper is the conference publication of the Master's thesis in [Nusrat-Thesis-Mahidol-University](https://github.com/NusratBegum/Nusrat-Thesis-Mahidol-University). The thesis re-evaluates EADD under a stricter protocol (real-world and synthetic streams, D3 compared both with its authors' settings and in an identical setup, five seeds on the annotated streams, missed drifts counted), so its results and conclusions differ from this paper. The paper is a published record: do not edit its content.
 
 📅 **Conference:** 24–27 June 2026
 📍 **Location:** The Royal River Hotel, Bangkok, Thailand
@@ -19,7 +19,7 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 | `2026172661.pdf` | **IEEE PDF eXpress-certified PDF** (the file uploaded to EDAS) |
 | `jcsse2026_final_presentation.pdf` | Slides presented at the conference (16 slides) |
 | `EADD_speaker_notes.md`, `EADD_footnotes.md`, `EADD_slide_changes.md` | Notes for the talk |
-| `figures/` | Paper figures and `make_figures.py` |
+| `figures/` | Slide figures (PDF/PNG) and `make_figures.py`, which regenerates them; the paper's only figure is drawn in TikZ |
 | `CopyrightReceipt.pdf` | Signed IEEE Electronic Copyright Form (eCF) receipt |
 | `IEEEtran.cls` | IEEE Conference Proceedings class (camera-ready 2018 template) |
 | `archive/slides/` | Earlier slide drafts (v1 to v6); not maintained |
@@ -49,7 +49,7 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 | **Notification of Acceptance 3rd Round** | **6 May 2026** |
 | **Camera Ready Submission 3rd Round** | **6 May – 15 May 2026** ← this paper |
 | Early Bird Registration | 9 March – 10 May 2026 (Bangkok Local Time, GMT+7) |
-| Author Registration | 9 March – 15 May 2026 (Bangkok Local Time, GMT+7) |
+| Author Registration | 9 March – 17 May 2026 (Bangkok Local Time, GMT+7) |
 | Non-Author Registration | 11 – 22 May 2026 (Bangkok Local Time, GMT+7) |
 | Conference | 24 – 27 June 2026 |
 
@@ -60,7 +60,7 @@ pdflatex jcsse2026_full_paper.tex
 pdflatex jcsse2026_full_paper.tex   # second pass to resolve \cite and \ref
 ```
 
-Requires: TeX Live 2018+ with `IEEEtran.cls` (provided here), `algorithm`, `algorithmic`, `booktabs`, `tikz`, `balance` packages.
+Requires: TeX Live 2018+ with `IEEEtran.cls` (provided here) and the packages `cite`, `amsmath`, `amssymb`, `amsfonts`, `algorithm`, `algorithmic`, `graphicx`, `textcomp`, `xcolor`, `booktabs`, `array`, `enumitem`, `balance`, `tikz`.
 
 ## Publication
 

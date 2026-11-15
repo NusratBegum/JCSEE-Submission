@@ -16,11 +16,11 @@ The camera-ready JCSSE 2026 paper "Enhanced Adversarial Drift Detection for MLOp
 
 ```bash
 pdflatex jcsse2026_full_paper.tex && pdflatex jcsse2026_full_paper.tex
-python figures/make_figures.py        # regenerates the paper figures
+python figures/make_figures.py        # regenerates the slide figures
 ```
 
 ## Layout
 
-`figures/` holds the paper figures and their script. `jcsse2026_final_presentation.pdf` is the deck that was presented; `EADD_speaker_notes.md`, `EADD_footnotes.md` and `EADD_slide_changes.md` belong to it. `archive/slides/` holds earlier slide drafts and is not maintained (their relative paths to `figures/` no longer resolve).
+`figures/` holds the slide figures and their script; the paper's only figure is drawn in TikZ. `jcsse2026_final_presentation.pdf` is the deck that was presented; `EADD_speaker_notes.md`, `EADD_footnotes.md` and `EADD_slide_changes.md` belong to it. `archive/slides/` holds earlier slide drafts and is not maintained (their relative paths to `figures/` no longer resolve).
 
-The experiment code that produced the paper's numbers is in the sibling repo `unsupervised-concept-drift-detection` (`legacy/experiment1..7_*.py`, `legacy/experiment_camera_ready.py`, `experiments/results/`).
+The experiment code that produced the paper's numbers is in the sibling repo `unsupervised-concept-drift-detection` (`legacy/experiment1..7_*.py`, `legacy/experiment_camera_ready.py`, `experiments/results/` and `experiments/results_cameraready/`).
