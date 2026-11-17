@@ -11,6 +11,16 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 📍 **Location:** The Royal River Hotel, Bangkok, Thailand
 🌐 **Website:** https://jcsse2026.org/
 
+## Known discrepancies in the published paper
+
+A later review of the code history (November 2026) found that the paper does not describe some of its experiments correctly. The paper is a published record and is not changed here; a correction through IEEE after the thesis defense is for all co-authors to decide. The code is in [unsupervised-concept-drift-detection](https://github.com/NusratBegum/unsupervised-concept-drift-detection) (`legacy/`, `experiments/results/`, `experiments/results_cameraready/`).
+
+1. **D3 window sizes.** The paper says D3 was run with windows matched to EADD's. It used 100/50 samples in the false-alarm experiment and 300/120 on the synthetic streams.
+2. **ASPT in two results.** The INSECTS table (Table III) and the stable-stream false-alarm results came from code versions before ASPT was added (commits `c461b3c` and `9b22ab7`). The claim that ASPT removes spurious detections is therefore not supported by those runs.
+3. **Abstract p-value.** The abstract pairs the 54.6 false alarms of D3 with p = 0.0101, which belongs to the threshold 0.6; at the paper's threshold 0.7 the p-value is 0.2266.
+4. **Settings.** The paper gives a SHAP threshold of 0.8 and a +2 sigma shift; the code uses 0.7 and +3 sigma. The software versions listed are older than those used.
+5. **Size of the INSECTS result.** The INSECTS comparison was a single unseeded run. With five seeds and missed drifts counted, D3 with LightGBM has a higher recall than EADD on these streams (thesis, Chapter 4).
+
 ## Files
 
 | File | Purpose |
@@ -31,7 +41,7 @@ Camera-ready full-paper submission to **The 23rd International Joint Conference 
 - **Pages:** ≤ 6 (full paper)
 - **Embedded fonts**, **PDF v1.4+**, **no bookmarks / hyperlinks / passwords**
 - **Author block:** all author info present (camera-ready, not blind)
-- **IEEE copyright notice** on page 1: NOT included — organizer adds it after submission
+- **IEEE copyright notice** on page 1: not in the submitted file (the organizer adds it in IEEE Xplore); the copies posted here carry the IEEE accepted-version notice, added on 17 Nov 2026
 - **Validation:** all final PDFs must pass IEEE PDF eXpress at https://ieee-pdf-express.org/ (Conference ID `68839X`) before EDAS upload
 
 ## Important Dates (JCSSE 2026, Round 3 track)
@@ -80,14 +90,12 @@ Requires: TeX Live 2018+ with `IEEEtran.cls` (provided here) and the packages `c
 
 ## License
 
-**Two regimes apply to this repository — see [LICENSE](LICENSE) for full terms.**
+See [LICENSE](LICENSE).
 
-| Material | License | Notes |
+| Material | Copyright | Terms |
 |---|---|---|
-| Published paper PDF (`jcsse2026_full_paper.pdf`, `2026172661.pdf`) | © 2026 IEEE. All rights reserved. | Copyright transferred to IEEE via signed eCF. Personal scholarly use only. |
-| LaTeX source, figures, slides, supplementary materials (© 2026 Nusrat Begum) | [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) | Share-only, non-commercial, no derivatives, with attribution. |
-
-**Commercial use** of any material requires written permission from the author: `nusrat.beg@student.mahidol.ac.th`.
+| The paper: `jcsse2026_full_paper.tex`, `jcsse2026_full_paper.pdf`, `2026172661.pdf` | © 2026 IEEE (transferred with the signed eCF) | Authors' accepted version, posted under the IEEE author posting policy; the IEEE notice is on page 1 of each PDF |
+| Talk materials: slides, speaker notes, slide figures, `archive/slides/` | © 2026 Nusrat Begum | [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/) |
 
 **Citation** (required for any sharing):
 
@@ -100,6 +108,8 @@ Requires: TeX Live 2018+ with `IEEEtran.cls` (provided here) and the packages `c
   booktitle = {Proc. 23rd International Joint Conference on Computer
                Science and Software Engineering (JCSSE)},
   year      = {2026},
+  pages     = {684--689},
+  doi       = {10.1109/JCSSE68839.2026.11596765},
   publisher = {IEEE},
 }
 ```

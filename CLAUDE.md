@@ -8,7 +8,7 @@ The camera-ready JCSSE 2026 paper "Enhanced Adversarial Drift Detection for MLOp
 
 ## Rules
 
-- Do not change the content of `jcsse2026_full_paper.tex`, `jcsse2026_full_paper.pdf`, `2026172661.pdf` (the IEEE PDF eXpress file) or `CopyrightReceipt.pdf`. Corrections to the paper are a decision for all co-authors and go through IEEE, not through this repo.
+- Do not change the content of `jcsse2026_full_paper.tex`, `jcsse2026_full_paper.pdf`, `2026172661.pdf` (the IEEE PDF eXpress file) or `CopyrightReceipt.pdf`. The only change made to the two PDFs is the IEEE accepted-version notice stamped at the bottom of page 1 (17 Nov 2026), which IEEE requires for posted copies. Corrections to the paper are a decision for all co-authors and go through IEEE, not through this repo.
 - The thesis (sibling repo `Nusrat-Thesis-Mahidol-University`) re-evaluates EADD under a stricter protocol and reaches different conclusions. Do not "sync" numbers from the thesis into the paper.
 - Commit only from inside this folder. The parent `Final/` folder is not a git repository.
 
