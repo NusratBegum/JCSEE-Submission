@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite the published paper below."
+title: "Enhanced Adversarial Drift Detection for MLOps Feature Monitoring (JCSSE 2026 paper and talk materials)"
+authors:
+  - family-names: Begum
+    given-names: Nusrat
+    affiliation: "Faculty of ICT, Mahidol University"
+  - family-names: Yamchote
+    given-names: Phaphontee
+    affiliation: "Faculty of ICT, Mahidol University"
+  - family-names: Amornbunchornvej
+    given-names: Chainarong
+    affiliation: "NECTEC, NSTDA"
+  - family-names: Noraset
+    given-names: Thanapon
+    affiliation: "Faculty of ICT, Mahidol University"
+repository-code: "https://github.com/NusratBegum/JCSEE-Submission"
+url: "https://ieeexplore.ieee.org/document/11596765"
+keywords:
+  - drift detection
+  - machine learning
+  - MLOps
+  - feature drift
+preferred-citation:
+  type: conference-paper
+  title: "Enhanced Adversarial Drift Detection for MLOps Feature Monitoring"
+  authors:
+    - family-names: Begum
+      given-names: Nusrat
+    - family-names: Yamchote
+      given-names: Phaphontee
+    - family-names: Amornbunchornvej
+      given-names: Chainarong
+    - family-names: Noraset
+      given-names: Thanapon
+  collection-title: "2026 23rd International Joint Conference on Computer Science and Software Engineering (JCSSE)"
+  conference:
+    name: "23rd International Joint Conference on Computer Science and Software Engineering (JCSSE 2026)"
+    city: Bangkok
+    country: TH
+    date-start: 2026-06-24
+    date-end: 2026-06-27
+  publisher:
+    name: IEEE
+  year: 2026
+  start: 684
+  end: 689
+  doi: "10.1109/JCSSE68839.2026.11596765"
+  url: "https://ieeexplore.ieee.org/document/11596765"

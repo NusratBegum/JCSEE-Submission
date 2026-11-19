@@ -15,8 +15,12 @@
 *.snm
 *.vrb
 
-# PDF output (uncomment if you want to include PDF in repo)
-# *.pdf
+*.xdv
+*.run.xml
+*-blx.bib
+
+# Python
+__pycache__/
 
 # macOS
 .DS_Store
